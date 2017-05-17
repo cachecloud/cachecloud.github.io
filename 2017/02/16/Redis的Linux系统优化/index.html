@@ -1,0 +1,880 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。通常来看，Redis开发和运维人员更加关注的是Redis本身的一些配置优化，例如AOF和RDB的配置优化、数据结构的配置优化等，但是对于操作系统是否需要针对Redis做一些配置优化不甚了解或者不太关心，然而事实证明一个良好的系统操作配置能够为Redis服务良好">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis的Linux系统优化">
+<meta property="og:url" content="http://yoursite.com/2017/02/16/Redis的Linux系统优化/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。通常来看，Redis开发和运维人员更加关注的是Redis本身的一些配置优化，例如AOF和RDB的配置优化、数据结构的配置优化等，但是对于操作系统是否需要针对Redis做一些配置优化不甚了解或者不太关心，然而事实证明一个良好的系统操作配置能够为Redis服务良好">
+<meta property="og:image" content="http://i3.itc.cn/20170216/3084_3bb93b70_695d_bfa8_69d4_6acce0e01f40_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170216/3084_4c9daaae_5820_6cf4_dcdb_83f29c1afc4f_1.jpg">
+<meta property="og:updated_time" content="2017-03-03T01:37:25.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis的Linux系统优化">
+<meta name="twitter:description" content="声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。通常来看，Redis开发和运维人员更加关注的是Redis本身的一些配置优化，例如AOF和RDB的配置优化、数据结构的配置优化等，但是对于操作系统是否需要针对Redis做一些配置优化不甚了解或者不太关心，然而事实证明一个良好的系统操作配置能够为Redis服务良好">
+<meta name="twitter:image" content="http://i3.itc.cn/20170216/3084_3bb93b70_695d_bfa8_69d4_6acce0e01f40_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Redis的Linux系统优化 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Redis的Linux系统优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-16T16:20:00+08:00" content="2017-02-16">
+              2017-02-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Redis开发与运维/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis开发与运维</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/02/16/Redis的Linux系统优化/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/16/Redis的Linux系统优化/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/02/16/Redis的Linux系统优化/" class="leancloud_visitors" data-flag-title="Redis的Linux系统优化">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。"><a href="#声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。" class="headerlink" title="声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。"></a>声明：本文内容来自<a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external">《Redis开发与运维》</a>一书第12章，如转载请声明。另外，<a href="https://cachecloud.github.io/2017/03/01/Redis%E5%BC%80%E5%8F%91%E4%B8%8E%E8%BF%90%E7%BB%B4-%E5%9B%BE%E4%B9%A6%E6%8A%BD%E5%A5%96%E8%A7%84%E5%88%99/" target="_blank" rel="external">《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本</a>。</h3><p>通常来看，Redis开发和运维人员更加关注的是Redis本身的一些配置优化，例如AOF和RDB的配置优化、数据结构的配置优化等，但是对于操作系统是否需要针对Redis做一些配置优化不甚了解或者不太关心，然而事实证明一个良好的系统操作配置能够为Redis服务良好运行保驾护航。</p>
+<p>众所周知Redis的作者对于Windows操作系统并不感冒，目前大部分公司都会将Web服务器、数据库服务器等部署在Linux操作系统上，Redis也不例外。所以接下来介绍Linux操作系统如何优化Redis，包含如下七个方面。</p>
+<p>一. <a href="#chapter1">内存分配控制</a><br>二. <a href="#chapter2">swappiness</a><br>三. <a href="#chapter3">Transparent Huge Pages</a><br>四. <a href="#chapter4">OOM killer</a><br>五. <a href="#chapter5">使用NTP</a><br>六. <a href="#chapter6">ulimit</a><br>七. <a href="#chapter7">TCP backlog</a></p>
+<p><a name="chapter1"></a></p>
+<h2 id="一-内存分配控制"><a href="#一-内存分配控制" class="headerlink" title="一. 内存分配控制"></a>一. 内存分配控制</h2><h3 id="1-vm-overcommit-memory"><a href="#1-vm-overcommit-memory" class="headerlink" title="1. vm.overcommit_memory"></a>1. vm.overcommit_memory</h3><p>Redis在启动时可能会出现这样的日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &apos;vm.overcommit_memory = 1&apos; to /etc/sysctl.conf and then reboot or run the </div><div class="line">command &apos;sysctl vm.overcommit_memory=1&apos; for this to take effect.</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>在分析这个问题之前，首先要弄清楚什么是overcommit？Linux操作系统对大部分申请内存的请求都回复yes，以便能运行更多的程序。因为申请内存后，并不会马上使用内存，这种技术叫做overcommit。如果Redis在启动时有上面的日志，说明vm.overcommit_memory=0，Redis提示把它设置为1。</p>
+<p>vm.overcommit_memory用来设置内存分配策略，它有三个可选值，如下表所示。</p>
+<table>
+<thead>
+<tr>
+<th>vm.overcommit_memory</th>
+<th>含义 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>表示内核将检查是否有足够的可用内存。如果有足够的可用内存，内存申请通过，否则内存申请失败，并把错误返回给应用进程 </td>
+</tr>
+<tr>
+<td>1</td>
+<td>表示内核允许超量使用内存直到用完为止 </td>
+</tr>
+<tr>
+<td>2</td>
+<td>表示内核决不过量的(“never overcommit”)使用内存，即系统整个内存地址空间不能超过swap+50%的RAM值，50%是overcommit_ratio默认值，此参数同样支持修改 </td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">注意：本文的可用内存代表物理内存与swap之和。</div></pre></td></tr></table></figure>
+<p>日志中的Background save代表的是bgsave和bgrewriteaof，如果当前可用内存不足，操作系统应该如何处理fork。如果vm.overcommit_memory=0，代表如果没有可用内存，就申请内存失败，对应到Redis就是fork执行失败，在Redis的日志会出现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Cannot allocate memory</div></pre></td></tr></table></figure></p>
+<p>Redis建议把这个值设置为1，是为了让fork能够在低内存下也执行成功。</p>
+<h3 id="2-获取和设置"><a href="#2-获取和设置" class="headerlink" title="2. 获取和设置"></a>2. 获取和设置</h3><h4 id="获取："><a href="#获取：" class="headerlink" title="获取："></a>获取：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cat /proc/sys/vm/overcommit_memory</div><div class="line">0</div></pre></td></tr></table></figure>
+<h4 id="设置："><a href="#设置：" class="headerlink" title="设置："></a>设置：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">echo &quot;vm.overcommit_memory=1&quot; &gt;&gt; /etc/sysctl.conf</div><div class="line">sysctl vm.overcommit_memory=1</div></pre></td></tr></table></figure>
+<h3 id="3-最佳实践"><a href="#3-最佳实践" class="headerlink" title="3. 最佳实践"></a>3. 最佳实践</h3><ul>
+<li>Redis设置合理的maxmemory，保证机器有20%~30%的闲置内存。</li>
+<li>集中化管理aof重写和rdb的bgsave。</li>
+<li>设置vm.overcommit_memory=1，防止极端情况下，会造成fork失败。</li>
+</ul>
+<p><a name="chapter2"></a></p>
+<h2 id="二-swappiness"><a href="#二-swappiness" class="headerlink" title="二. swappiness"></a>二. swappiness</h2><h3 id="1-参数说明"><a href="#1-参数说明" class="headerlink" title="1. 参数说明"></a>1. 参数说明</h3><p>swap对于操作系统来比较重要，当物理内存不足时，可以swap out一部分内存页，已解燃眉之急。但世界上没有免费午餐，swap空间由硬盘提供，对于需要高并发、高吞吐的应用来说，磁盘IO通常会成为系统瓶颈。在Linux中，并不是要等到所有物理内存都使用完才会使用到swap，系统参数swppiness会决定操作系统使用swap的倾向程度。swappiness的取值范围是0~100，swappiness的值越大，说明操作系统可能使用swap的概率越高，swappiness值越低，表示操作系统更加倾向于使用物理内存。swap的默认值是60，了解这个值的含义后，有利于Redis的性能优化。下表对swappiness的重要值进行了说明。</p>
+<table>
+<thead>
+<tr>
+<th>swapniess</th>
+<th>策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Linux3.5以及以上：宁愿OOM killer也不用swap<br>Linux3.4以及更早：宁愿swap也不要OOM killer</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Linux3.5以及以上：宁愿swap也不要OOM killer </td>
+</tr>
+<tr>
+<td>60</td>
+<td>默认值</td>
+</tr>
+<tr>
+<td>100</td>
+<td>操作系统会主动地使用swap</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">运维提示：OOM(Out Of Memory) killer机制是指Linux操作系统发现可用内存不足时，强制杀死一些用户进程（非内核进程），来保证系统有足够的可用内存进行分配。</div></pre></td></tr></table></figure>
+<p>从下表中可以看出，swappiness参数在Linux 3.5版本前后的表现并不完全相同，Redis运维人员在设置这个值需要关注当前操作系统的内核版本。</p>
+<h3 id="2-设置方法"><a href="#2-设置方法" class="headerlink" title="2. 设置方法"></a>2. 设置方法</h3><p>swappiness设置方法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &#123;bestvalue&#125; &gt; /proc/sys/vm/swappiness</div></pre></td></tr></table></figure>
+<p>但是上述方法在系统重启后就会失效，为了让配置在重启Linux操作系统后立即生效，只需要在/etc/sysctl.conf追加 vm.swappiness={bestvalue}即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo vm.swappiness=&#123;bestvalue&#125; &gt;&gt; /etc/sysctl.conf</div></pre></td></tr></table></figure>
+<p>需要注意/proc/sys/vm/swappiness是设置操作，/etc/sysctl.conf是追加操作。</p>
+<h3 id="3-如何监控swap"><a href="#3-如何监控swap" class="headerlink" title="3. 如何监控swap"></a>3. 如何监控swap</h3><h4 id="1-查看swap的总体情况"><a href="#1-查看swap的总体情况" class="headerlink" title="(1) 查看swap的总体情况"></a>(1) 查看swap的总体情况</h4><p>Linux提供了free命令来查询操作系统的内存使用情况，其中也包含了swap的相关使用情况。下面是某台Linux服务器执行free –m(以兆为到位)的结果，其中需要重点关注的是最后一行的swap统计，从执行结果看，swap一共有4095M，使用了0M，空闲了4095M。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">             total       used       free     shared    buffers     cached</div><div class="line">Mem:         64385      31573      32812          0        505      10026</div><div class="line">-/+ buffers/cache:      21040      43344</div><div class="line">Swap:         4095          0       4095</div></pre></td></tr></table></figure>
+<p>在另一台Linux服务器同样执行free -m，这台服务器开启了8189M swap，其中使用了5241M。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">             total       used       free     shared    buffers     cached</div><div class="line">Mem:         24096       8237      15859          0        136       2483</div><div class="line">-/+ buffers/cache:       5617      18479</div><div class="line">Swap:         8189       5241       2947</div></pre></td></tr></table></figure>
+<h4 id="2-实时查看swap的使用"><a href="#2-实时查看swap的使用" class="headerlink" title="(2) 实时查看swap的使用"></a>(2) 实时查看swap的使用</h4><p>Linux提供了vmstat命令查询系统的相关性能指标，其中包含负载、CPU、内存、swap、IO的相关属性。但其中和swap有关的指标是si和so，它们分别代表了操作系统的swap in和swap out。下面是执行vmstat 1（每隔一秒输出）的效果，可以看到si和so都为0，代表当前没有使用swap。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># vmstat  1</div><div class="line">procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----</div><div class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</div><div class="line"> 1  0      0 33593468 517656 10271928    0    0     0     1    0    0  8  0 91  0  0	</div><div class="line"> 4  0      0 33594516 517656 10271928    0    0     0     0 10606 9647 10  1 90  0  0	</div><div class="line"> 1  0      0 33594392 517656 10271928    0    0     0     0 11490 10244 11  1 89  0  0	</div><div class="line"> 6  0      0 33594292 517656 10271928    0    0     0    36 12406 10681 13  1 87  0  0</div></pre></td></tr></table></figure>
+<h4 id="3-查看指定进程的swap使用情况"><a href="#3-查看指定进程的swap使用情况" class="headerlink" title="(3) 查看指定进程的swap使用情况"></a>(3) 查看指定进程的swap使用情况</h4><p>Linux操作系统中，/proc/{pid}目录是存储指定进程的相关信息，其中/proc/{pid}/smaps是记录了当前进程所对应的内存映像信息，这个信息对于查询指定进程的swap使用情况很有帮助。下面以一个Redis实例进行说明<br>通过info server获取Redis的进程号process_id:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">redis-cli -h ip -p port info server | grep process_id</div><div class="line">process_id:986</div></pre></td></tr></table></figure>
+<p>通过cat /proc/986/smaps查询Redis的smaps信息，由于有多个内存块信息，这里只输出一个内存块镜像信息进行观察。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">2aab0a400000-2aab35c00000 rw-p 2aab0a400000 00:00 0 </div><div class="line">Size:            712704 kB</div><div class="line">Rss:             617872 kB</div><div class="line">Shared_Clean:         0 kB</div><div class="line">Shared_Dirty:         0 kB</div><div class="line">Private_Clean:    15476 kB</div><div class="line">Private_Dirty:   602396 kB</div><div class="line">Swap:             58056 kB</div><div class="line">Pss:             617872 kB</div></pre></td></tr></table></figure>
+<p>其中Swap字段代表该内存块存在swap分区的数据大小。通过执行如下命令，就可以找到每个内存块镜像信息中，这个进程使用到的swap量，通过求和就可以算出总的swap用量。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">cat /proc/986/smaps | grep Swap</div><div class="line">Swap:                 0 kB</div><div class="line">Swap:                 0 kB</div><div class="line">…</div><div class="line">Swap:                 0 kB</div><div class="line">Swap:            478320 kB</div><div class="line">…</div><div class="line">Swap:               624 kB</div><div class="line">Swap:                 0 kB</div></pre></td></tr></table></figure>
+<h3 id="4-最佳实践"><a href="#4-最佳实践" class="headerlink" title="4. 最佳实践"></a>4. 最佳实践</h3><p>如果Linux&gt;3.5，vm.swapniess=1，否则vm.swapniess=0，从而实现如下两个目标：</p>
+<ul>
+<li>物理内存充足时候，使Redis足够快。</li>
+<li>物理内存不足时候，避免Redis死掉(如果当前Redis为高可用，死掉比阻塞更好)。</li>
+</ul>
+<p><a name="chapter3"></a></p>
+<h2 id="三-Transparent-Huge-Pages"><a href="#三-Transparent-Huge-Pages" class="headerlink" title="三. Transparent Huge Pages"></a>三. Transparent Huge Pages</h2><p>Redis在启动时可能会看到如下日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command &apos;echo never &gt; /sys/kernel/mm/transparent_hugepage/enabled&apos; as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.</div></pre></td></tr></table></figure>
+<p>从提示看Redis建议修改Transparent Huge Pages (THP)的相关配置，Linux kernel在2.6.38内核增加了Transparent Huge Pages (THP)特性 ，支持大内存页(2MB)分配，默认开启。当开启时可以降低fork子进程的速度，但fork之后，每个内存页从原来4KB变为2MB，会大幅增加重写期间父进程内存消耗。同时每次写命令引起的复制内存页单位放大了512倍，会拖慢写操作的执行时间，导致大量写操作慢查询。例如简单的incr命令也会出现在慢查询中。因此Redis日志中建议将此特性进行禁用，禁用方法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo never &gt;  /sys/kernel/mm/transparent_hugepage/enabled</div></pre></td></tr></table></figure>
+<p>而且为了使机器重启后THP配置依然生效，可以在/etc/rc.local中追加echo never &gt; /sys/kernel/mm/transparent_hugepage/enabled。</p>
+<p>在设置THP配置时需要注意：有些Linux的发行版本没有将THP放到/sys/kernel/mm/transparent_hugepage/enabled中，例如Red Hat 6以上的THP配置放到/sys/kernel/mm/redhat_transparent_hugepage/enabled中。而Redis源码中检查THP时，把THP位置写死。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">FILE *fp = fopen(&quot;/sys/kernel/mm/transparent_hugepage/enabled&quot;,&quot;r&quot;);</div><div class="line">if (!fp) return 0;</div></pre></td></tr></table></figure>
+<p>所以在发行版中，虽然没有THP的日志提示，但是依然存在THP所带来的问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo never &gt;  /sys/kernel/mm/redhat_transparent_hugepage/enabled</div></pre></td></tr></table></figure>
+<p><a name="chapter4"></a></p>
+<h2 id="四-OOM-killer"><a href="#四-OOM-killer" class="headerlink" title="四. OOM killer"></a>四. OOM killer</h2><p>OOM killer会在可用内存不足时选择性的杀掉用户进程，它的运行规则是怎样的，会选择哪些用户进程“下手”呢？OOM killer进程会为每个用户进程设置一个权值，这个权值越高，被“下手”的概率就越高，反之概率越低。每个进程的权值存放在/proc/{progress_id}/oom_score中，这个值是受/proc/{progress_id}/oom_adj的控制，oom_adj在不同的Linux版本的最小值不同，可以参考Linux源码中oom.h(从-15到-17)。当oom_adj设置为最小值时，该进程将不会被OOM killer杀掉，设置方法如下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &#123;value&#125; &gt; /proc/$&#123;process_id&#125;/oom_adj</div></pre></td></tr></table></figure>
+<p>对于Redis所在的服务器来说，可以将所有Redis的oom_adj设置为最低值或者稍小的值，降低被OOM killer杀掉的概率。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">for redis_pid in $(pgrep -f &quot;redis-server&quot;)</div><div class="line">do</div><div class="line">  echo -17 &gt; /proc/$&#123;redis_pid&#125;/oom_adj</div><div class="line">done</div></pre></td></tr></table></figure>
+<h3 id="运维提示："><a href="#运维提示：" class="headerlink" title="运维提示："></a>运维提示：</h3><ul>
+<li>有关OOM killer的详细细节，可以参考Linux源码mm/oom_kill.c中oom_badness函数。</li>
+<li>笔者认为oom_adj参数只能起到辅助作用，合理的规划内存更为重要。</li>
+<li>通常在高可用情况下，被杀掉比僵死更好，因此不要过多依赖oom_adj配置</li>
+</ul>
+<p><a name="chapter5"></a></p>
+<h2 id="五-使用NTP"><a href="#五-使用NTP" class="headerlink" title="五. 使用NTP"></a>五. 使用NTP</h2><p>NTP(Network Time Protocol)网络时间协议，一种保证不同机器时钟一致性的服务。我们知道像Redis Sentinel和Redis Cluster这两种需要多个Redis实例的类型，可能会涉及多台服务器。虽然Redis并没有对多个服务器的时钟有严格的要求，但是假如多个Redis实例所在的服务器时钟不一致，对于一些异常情况的日志排查是非常困难的，例如Redis Cluster的故障转移，如果日志时间不一致，对于我们排查问题带来很大的困扰(注：但不会影响集群功能，集群节点依赖各自时钟)。一般公司里都会有NTP服务用来提供标准时间服务，从而达到纠正时钟的效果(如下图所示)，为此我们可以每天定时去同步一次系统时间，从而使得集群中的时间是统一。</p>
+<p><img src="http://i3.itc.cn/20170216/3084_3bb93b70_695d_bfa8_69d4_6acce0e01f40_1.png" alt=""></p>
+<p>例如每小时的同步1次NTP服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">0 * * * * /usr/sbin/ntpdate ntp.xx.com &gt; /dev/null 2&gt;&amp;1</div></pre></td></tr></table></figure></p>
+<p><a name="chapter6"></a></p>
+<h2 id="六-ulimit"><a href="#六-ulimit" class="headerlink" title="六. ulimit"></a>六. ulimit</h2><p>在Linux中，可以通过ulimit查看和设置系统的当前用户进程的资源数。其中ulimit -a命令包含的open files参数，是单个用户同时打开的最大文件个数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># ulimit –a</div><div class="line">…</div><div class="line">max locked memory       (kbytes, -l) 64</div><div class="line">max memory size         (kbytes, -m) unlimited</div><div class="line">open files                      (-n) 1024</div><div class="line">pipe size            (512 bytes, -p) 8</div><div class="line">…</div></pre></td></tr></table></figure>
+<p>Redis允许同时有多个客户端通过网络进行连接，可以通过配置maxclients来限制最大客户端连接数。对Linux操作系统来说这些网络连接都是文件句柄。假设当前open files是4096，那么启动Redis时会看到如下日志。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># You requested maxclients of 10000 requiring at least 10032 max file descriptors.</div><div class="line"># Redis can’t set maximum open files to 10032 because of OS error: Operation not permitted.</div><div class="line"># Current maximum open files is 4096. Maxclients has been reduced to 4064 to compensate for low ulimit. If you need higher maxclients increase ‘ulimit –n’.</div></pre></td></tr></table></figure>
+<p>上面的日志解释如下：</p>
+<ul>
+<li>第一行：Redis建议把open files至少设置成10032，那么这个10032是如何来的呢？因为maxclients的默认是10000，这些是用来处理客户端连接的，除此之外，Redis内部会使用最多32个文件描述符，所以这里的10032 = 10000 + 32。</li>
+<li>第二行：Redis不能将open files设置成10032，因为它没有权限设置。</li>
+<li>第三行：当前系统的open files是4096，所以maxclients被设置成4096-32=4064个，如果你想设置更高的maxclients，请使用ulimit -n来设置。<br>从上面的三行日志分析可以看出open files的限制优先级比maxclients大。<br>open files的设置方法如下：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ulimit –Sn &#123;max-open-files&#125;</div></pre></td></tr></table></figure>
+<p><a name="chapter7"></a></p>
+<h2 id="七-TCP-backlog"><a href="#七-TCP-backlog" class="headerlink" title="七. TCP backlog"></a>七. TCP backlog</h2><p>Redis默认的tcp-backlog为511，可以通过修改配置tcp-backlog进行调整，如果Linux的tcp-backlog小于Redis设置的tcp-backlog，那么在Redis启动时会看到如下日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div></pre></td></tr></table></figure>
+<p>查看方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cat /proc/sys/net/core/somaxconn</div><div class="line">128</div></pre></td></tr></table></figure>
+<p>修改方法：.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo 511 &gt; /proc/sys/net/core/somaxconn</div></pre></td></tr></table></figure>
+<p>###　目前<a href="https://item.jd.com/12121730.html" target="_blank" rel="external">京东</a>、<a href="http://product.china-pub.com/5173109" target="_blank" rel="external">china-pub</a>已经预售，欢迎关注。</p>
+<p><a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external"><img src="http://i2.itc.cn/20170216/3084_4c9daaae_5820_6cf4_dcdb_83f29c1afc4f_1.jpg" alt=""></a></p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/06/1.3.机器监控功能/" rel="next" title="CacheCloud 1.3-机器监控功能">
+                <i class="fa fa-chevron-left"></i> CacheCloud 1.3-机器监控功能
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/16/Redis内存优化/" rel="prev" title="Redis的内存优化">
+                Redis的内存优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/02/16/Redis的Linux系统优化/"
+           data-title="Redis的Linux系统优化" data-url="http://yoursite.com/2017/02/16/Redis的Linux系统优化/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。"><span class="nav-number">1.</span> <span class="nav-text">声明：本文内容来自《Redis开发与运维》一书第12章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一-内存分配控制"><span class="nav-number"></span> <span class="nav-text">一. 内存分配控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-vm-overcommit-memory"><span class="nav-number">1.</span> <span class="nav-text">1. vm.overcommit_memory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-获取和设置"><span class="nav-number">2.</span> <span class="nav-text">2. 获取和设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取："><span class="nav-number">2.1.</span> <span class="nav-text">获取：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置："><span class="nav-number">2.2.</span> <span class="nav-text">设置：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-最佳实践"><span class="nav-number">3.</span> <span class="nav-text">3. 最佳实践</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-swappiness"><span class="nav-number"></span> <span class="nav-text">二. swappiness</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-参数说明"><span class="nav-number">1.</span> <span class="nav-text">1. 参数说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-设置方法"><span class="nav-number">2.</span> <span class="nav-text">2. 设置方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-如何监控swap"><span class="nav-number">3.</span> <span class="nav-text">3. 如何监控swap</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-查看swap的总体情况"><span class="nav-number">3.1.</span> <span class="nav-text">(1) 查看swap的总体情况</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-实时查看swap的使用"><span class="nav-number">3.2.</span> <span class="nav-text">(2) 实时查看swap的使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-查看指定进程的swap使用情况"><span class="nav-number">3.3.</span> <span class="nav-text">(3) 查看指定进程的swap使用情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-最佳实践"><span class="nav-number">4.</span> <span class="nav-text">4. 最佳实践</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Transparent-Huge-Pages"><span class="nav-number"></span> <span class="nav-text">三. Transparent Huge Pages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-OOM-killer"><span class="nav-number"></span> <span class="nav-text">四. OOM killer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#运维提示："><span class="nav-number">1.</span> <span class="nav-text">运维提示：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-使用NTP"><span class="nav-number"></span> <span class="nav-text">五. 使用NTP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-ulimit"><span class="nav-number"></span> <span class="nav-text">六. ulimit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-TCP-backlog"><span class="nav-number"></span> <span class="nav-text">七. TCP backlog</span></a></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

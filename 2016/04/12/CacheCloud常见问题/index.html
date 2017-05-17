@@ -1,0 +1,828 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="1.界面出现乱码 现象:  解决：修改online.properties或者local.properties中的cachecloud.db.url(前提是数据库是utf-8) 1cachecloud.db.url = jdbc:mysql://127.0.0.1:3306/cache-cloud?useUnicode=true&amp;amp;amp;characterEncoding=UTF-8">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CacheCloud-部署使用常见问题(待续)">
+<meta property="og:url" content="http://yoursite.com/2016/04/12/CacheCloud常见问题/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="1.界面出现乱码 现象:  解决：修改online.properties或者local.properties中的cachecloud.db.url(前提是数据库是utf-8) 1cachecloud.db.url = jdbc:mysql://127.0.0.1:3306/cache-cloud?useUnicode=true&amp;amp;amp;characterEncoding=UTF-8">
+<meta property="og:image" content="http://i0.itc.cn/20160412/3084_23e17f60_ea97_ca09_fd59_e356bdc8ab99_1.png">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1493878-e13804815937a33e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://i2.itc.cn/20160613/3084_5fde4ae0_35ee_af6c_176e_a294cf90e6f2_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160125/3084_c8e7ce83_c32f_003e_4d76_5628b614e3eb_1.jpg">
+<meta property="og:image" content="http://i0.itc.cn/20160614/3084_e29c3d10_b7eb_8771_2ce6_f1db03da8b5a_1.jpg">
+<meta property="og:updated_time" content="2017-02-22T01:08:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CacheCloud-部署使用常见问题(待续)">
+<meta name="twitter:description" content="1.界面出现乱码 现象:  解决：修改online.properties或者local.properties中的cachecloud.db.url(前提是数据库是utf-8) 1cachecloud.db.url = jdbc:mysql://127.0.0.1:3306/cache-cloud?useUnicode=true&amp;amp;amp;characterEncoding=UTF-8">
+<meta name="twitter:image" content="http://i0.itc.cn/20160412/3084_23e17f60_ea97_ca09_fd59_e356bdc8ab99_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> CacheCloud-部署使用常见问题(待续) | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                CacheCloud-部署使用常见问题(待续)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-04-12T11:20:00+08:00" content="2016-04-12">
+              2016-04-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/04/12/CacheCloud常见问题/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/04/12/CacheCloud常见问题/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/04/12/CacheCloud常见问题/" class="leancloud_visitors" data-flag-title="CacheCloud-部署使用常见问题(待续)">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1-界面出现乱码"><a href="#1-界面出现乱码" class="headerlink" title="1.界面出现乱码"></a>1.界面出现乱码</h4><ul>
+<li><p>现象:<br><img src="http://i0.itc.cn/20160412/3084_23e17f60_ea97_ca09_fd59_e356bdc8ab99_1.png"></p>
+</li>
+<li><p>解决：<br>修改online.properties或者local.properties中的cachecloud.db.url(前提是数据库是utf-8)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cachecloud.db.url = jdbc:mysql://127.0.0.1:3306/cache-cloud?useUnicode=<span class="literal">true</span>&amp;amp;characterEncoding=UTF-8</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<a id="more"></a>
+<h4 id="2-初始化脚本cachecloud-init-sh运行失败"><a href="#2-初始化脚本cachecloud-init-sh运行失败" class="headerlink" title="2.初始化脚本cachecloud-init.sh运行失败"></a>2.初始化脚本cachecloud-init.sh运行失败</h4><ul>
+<li><p>现象:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#sh cachecloud-init.sh cachecloud</span></div><div class="line">:  <span class="built_in">command</span> not found line 2:</div><div class="line">:  <span class="built_in">command</span> not found line 11:</div><div class="line">: invalid option nameine 12: <span class="built_in">set</span>: nounset</div></pre></td></tr></table></figure>
+</li>
+<li><p>解决：<br>  cachecloud-init.sh在windows上编辑过就会出现上面的错误，请使用vim直接编辑</p>
+</li>
+</ul>
+<h4 id="3-用户密码在哪"><a href="#3-用户密码在哪" class="headerlink" title="3.用户密码在哪"></a>3.用户密码在哪</h4><p>答：CacheCloud没有保存密码，而是希望将登录逻辑扩展到贵公司。</p>
+<ul>
+<li><p>具体扩展可以参考:<br><a href="https://github.com/sohutv/cachecloud/wiki/3.%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3#cc5" target="_blank" rel="external">https://github.com/sohutv/cachecloud/wiki/3.%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3#cc5</a></p>
+</li>
+<li><p>用户管理也可以参考视频：<br><a href="http://my.tv.sohu.com/pl/9100280/83250734.shtml" target="_blank" rel="external">http://my.tv.sohu.com/pl/9100280/83250734.shtml</a></p>
+</li>
+</ul>
+<h4 id="4-CacheCloud与Codis"><a href="#4-CacheCloud与Codis" class="headerlink" title="4.CacheCloud与Codis"></a>4.CacheCloud与Codis</h4><p>答：CacheCloud与Codis并没有可比性：</p>
+<ul>
+<li>CacheCloud是官方Redis(standalone、sentinel、cluster)的上层工具，是用于运维和管理Redis的。</li>
+<li>Codis是豌豆荚公司基于proxy方式对于Redis官方版本进行改造的分布式实现方式，当然其中也包含了管理Codis的dashboard<br>所以两者并不具有可比性。</li>
+</ul>
+<h4 id="5-CacheCloud是客户端到Redis的代理吗？"><a href="#5-CacheCloud是客户端到Redis的代理吗？" class="headerlink" title="5.CacheCloud是客户端到Redis的代理吗？"></a>5.CacheCloud是客户端到Redis的代理吗？</h4><p>答：不是，客户端只有第一次启动的时候去CacheCloud通过appId拿到Redis的节点信息，之后不会与CacheCloud打交道了。具体参考<a href="https://github.com/sohutv/cachecloud/issues/1" target="_blank" rel="external">issue1</a></p>
+<p>附图一张：<img src="http://upload-images.jianshu.io/upload_images/1493878-e13804815937a33e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h4 id="6-CacheCloud如何与服务器”打交道”"><a href="#6-CacheCloud如何与服务器”打交道”" class="headerlink" title="6.CacheCloud如何与服务器”打交道”"></a>6.CacheCloud如何与服务器”打交道”</h4><h5 id="6-1实现方式"><a href="#6-1实现方式" class="headerlink" title="6.1实现方式"></a>6.1实现方式</h5><p>答：CacheCloud通过ssh的方式与服务器”打交道”(例如：收集机器信息、推送配置文件、开启Redis节点)。所以在初始化服务器时要添加一个ssh的username和password，有关机器初始化可以参考<a href="https://github.com/sohutv/cachecloud/wiki/3.%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3" target="_blank" rel="external">Cachecloud快速接入</a>。</p>
+<p><strong>release 1.0版本请参考</strong>：<br>同时在cachecloud的local.properties和online.properties分别有cachecloud.machine.username和cachecloud.machine.password属性。</p>
+<p><strong>release 1.1及其以后版本请参考</strong>:<br><a href="http://cachecloud.github.io/2016/05/24/CacheCloud%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/" target="_blank" rel="external">http://cachecloud.github.io/2016/05/24/CacheCloud%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/</a></p>
+<h5 id="6-2-ssh安全吗？有其他方式吗？"><a href="#6-2-ssh安全吗？有其他方式吗？" class="headerlink" title="6.2 ssh安全吗？有其他方式吗？"></a>6.2 ssh安全吗？有其他方式吗？</h5><p>答：</p>
+<ul>
+<li>我们使用ssh主要考虑的是方便性，ssh是存在一定的安全性问题。同时考虑到cachecloud是在内网中使用的，所以适度放宽了条件。</li>
+<li>也可以采用证书的方式，例如这个<a href="https://github.com/sohutv/cachecloud/pull/33" target="_blank" rel="external">pull request</a></li>
+<li>其他方式根据企业的要求自定义实现，主要的实现实现都在SshUtil类中。</li>
+</ul>
+<h4 id="7-”之前”的Redis如何托管给CacheCloud管理："><a href="#7-”之前”的Redis如何托管给CacheCloud管理：" class="headerlink" title="7.”之前”的Redis如何托管给CacheCloud管理："></a>7.”之前”的Redis如何托管给CacheCloud管理：</h4><p>答：详见：<br><a href="http://cachecloud.github.io/2016/04/17/%E5%B7%B2%E5%AD%98%E5%9C%A8Redis%E6%8E%A5%E5%85%A5CacheCloud/" target="_blank" rel="external">http://cachecloud.github.io/2016/04/17/%E5%B7%B2%E5%AD%98%E5%9C%A8Redis%E6%8E%A5%E5%85%A5CacheCloud/</a></p>
+<h4 id="8-实例下线和心跳停止？"><a href="#8-实例下线和心跳停止？" class="headerlink" title="8.实例下线和心跳停止？"></a>8.实例下线和心跳停止？</h4><ul>
+<li>下线：管理员人工处理，真的下线了。</li>
+<li>心跳停止：监控认为有可能下线，但是由于网络等原因，可能并没有下线，所以需要管理员处理</li>
+</ul>
+<h4 id="9-配置修改是对实例下所有实例进行修改吗？"><a href="#9-配置修改是对实例下所有实例进行修改吗？" class="headerlink" title="9. 配置修改是对实例下所有实例进行修改吗？"></a>9. 配置修改是对实例下所有实例进行修改吗？</h4><p>答：是的。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cachecloud中各种类型(Redis-standalone, Redis-sentinel, Redis-cluster)，在开启应用时，使用的我们认为最优的配置。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;但是，每个用户自己服务类型不同，需求可能会不同，例如对于maxmemory-policy、list-max-ziplist-entries、list-max-ziplist-value等配置就会有所不同，如果有需要修改配置，用户可以自行提交配置修改。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;修改方法如下：</p>
+<ul>
+<li><p>(1) 进入应用统计信息页面，就配置看到申请配置修改按钮<br><img src="http://i2.itc.cn/20160613/3084_5fde4ae0_35ee_af6c_176e_a294cf90e6f2_1.png"></p>
+</li>
+<li><p>(2) 点击申请修改配置，填写相应字段和值<br><img src="http://i3.itc.cn/20160125/3084_c8e7ce83_c32f_003e_4d76_5628b614e3eb_1.jpg"></p>
+</li>
+<li><p>(3) 后台管理员接收到申请邮件，进行处理，处理完成后，用户将收到相应处理邮件</p>
+</li>
+</ul>
+<h6 id="如果想修改一个实例配置怎么办？"><a href="#如果想修改一个实例配置怎么办？" class="headerlink" title="如果想修改一个实例配置怎么办？"></a><strong>如果想修改一个实例配置怎么办？</strong></h6><p>现在需要手动到机器上修改，后期会修复这个问题，因为我们认为一般来说集群的配置尽可能的统一。</p>
+<h4 id="10-启动jvm报错："><a href="#10-启动jvm报错：" class="headerlink" title="10. 启动jvm报错："></a>10. 启动jvm报错：</h4><ul>
+<li>不要使用openJdk，查看方法java -version。</li>
+<li>确保jdk 1.7+</li>
+</ul>
+<p>下面就是openJdk的错误。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Unrecognized VM option <span class="string">'UnlockCommercialFeatures'</span></div><div class="line">Error: Could not create the Java Virtual Machine.</div><div class="line">Error: A fatal exception has occurred. Program will exit.</div></pre></td></tr></table></figure></p>
+<h4 id="11-机器管理中删除机器做了什么？"><a href="#11-机器管理中删除机器做了什么？" class="headerlink" title="11.机器管理中删除机器做了什么？"></a>11.机器管理中删除机器做了什么？</h4><ul>
+<li>从db删除机器信息和机器统计信息</li>
+<li>去掉机器信息收集和机器监控的定时任务<br>  所以：删除机器不会删除Redis实例信息、也不会关闭Redis进程，但是还是要谨慎处理。</li>
+</ul>
+<h4 id="12-CacheCloud都有哪些报警信息"><a href="#12-CacheCloud都有哪些报警信息" class="headerlink" title="12. CacheCloud都有哪些报警信息"></a>12. CacheCloud都有哪些报警信息</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">短信和邮件需要自己实现，请参考https://github.com/sohutv/cachecloud/wiki/3.%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3#cc5-2</div></pre></td></tr></table></figure>
+<ul>
+<li><p>Redis节点存活检测：5分钟检测一次，如果认为心跳停止，会收到短信和邮件报警()，会收到类似如下文案的消息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">CacheCloud系统-实例(10.10.xx.xx:6382)-由运行中变为心跳停止, appId:10510</div></pre></td></tr></table></figure>
+</li>
+<li><p>应用内存和节点内存超过阀值：<br>当应用的内存和节点内存的超过预设值(<a href="https://github.com/sohutv/cachecloud/wiki/1.%E7%94%A8%E6%88%B7%E5%8A%9F%E8%83%BD#cc9),会收到邮件报警" target="_blank" rel="external">https://github.com/sohutv/cachecloud/wiki/1.%E7%94%A8%E6%88%B7%E5%8A%9F%E8%83%BD#cc9),会收到邮件报警</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">分片(10.10.xx.xx:6381,应用(10510))内存使用率报警-预设百分之95-现已达到百分之95.07-应用的内存使用率百分之94.72-请及时关注</div></pre></td></tr></table></figure>
+</li>
+<li><p>机器相关报警<br>当机器的内存、负载、cpu超过预设配置时，<a href="http://cachecloud.github.io/2016/05/24/CacheCloud%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/" target="_blank" rel="external">预设值设置方法</a>，会收到邮件和短信报警，形如：</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ip:10.10.xx.xx,load:9.18</div></pre></td></tr></table></figure>
+<h4 id="13-CacheCloud的命令统计信息是如何收集"><a href="#13-CacheCloud的命令统计信息是如何收集" class="headerlink" title="13. CacheCloud的命令统计信息是如何收集"></a>13. CacheCloud的命令统计信息是如何收集</h4><p><strong>强调一下，命令统计信息不是用monitor收集，monitor使用不当对线上影响很大</strong>，可以看一下后果：<a href="http://carlosfu.iteye.com/blog/2254571" target="_blank" rel="external">http://carlosfu.iteye.com/blog/2254571</a></p>
+<p>Cachecloud使用的是info all命令中的命令统计模块进行收集，每分钟做一次差值：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">127.0.0.1:6391&gt; info Commandstats</div><div class="line"># Commandstats</div><div class="line">cmdstat_get:calls=450296089,usec=2775711206,usec_per_call=6.16</div><div class="line">cmdstat_set:calls=32913,usec=1138574,usec_per_call=34.59</div><div class="line">cmdstat_setex:calls=265,usec=9776,usec_per_call=36.89</div><div class="line">cmdstat_strlen:calls=7028,usec=47051,usec_per_call=6.69</div><div class="line">cmdstat_del:calls=373252,usec=44654789,usec_per_call=119.64</div><div class="line">cmdstat_exists:calls=11997395,usec=53442110,usec_per_call=4.45</div><div class="line">cmdstat_incr:calls=296540,usec=7100618,usec_per_call=23.94</div><div class="line">cmdstat_sadd:calls=140761,usec=188958343,usec_per_call=1342.41</div><div class="line">cmdstat_scard:calls=109335,usec=548093,usec_per_call=5.01</div><div class="line">cmdstat_smembers:calls=16,usec=8804,usec_per_call=550.25</div><div class="line">....................</div></pre></td></tr></table></figure></p>
+<p>就可以看到下面的效果了:<br><img src="http://i0.itc.cn/20160614/3084_e29c3d10_b7eb_8771_2ce6_f1db03da8b5a_1.jpg" alt="曲线图"></p>
+<h4 id="14-重要日志说明"><a href="#14-重要日志说明" class="headerlink" title="14. 重要日志说明"></a>14. 重要日志说明</h4><p>(1) 问题13已经提到cachecloud利用info差值来算上一分钟的一些统计信息，下面的日志为上一分钟没有统计数据，有可能是收集失败，有可能是确实没有(例如cachecloud刚刚启动)。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">2016-06-27 14:19:24.165 &#123;asyn-thread-2&#125; ERROR com.sohu.cache.redis.impl.RedisCenterImpl - [redis-lastInfoMap] : lastCollectTime = 201606271418 appId=10010 host:port = 10.10.xx.xx:63xx is null</div><div class="line">2016-06-27 14:19:24.168 &#123;asyn-thread-2&#125; ERROR com.sohu.cache.redis.impl.RedisCenterImpl - [redis-lastInfoMap] : lastCollectTime = 201606271418 appId=10044 host:port = 10.10.xx.xx:63xx is null</div><div class="line">2016-06-27 14:19:24.168 &#123;asyn-thread-2&#125; ERROR com.sohu.cache.redis.impl.RedisCenterImpl - [redis-lastInfoMap] : lastCollectTime = 201606271418 appId=10012 host:port = 10.10.xx.xx:63xx is null</div><div class="line">2016-06-27 14:19:24.230 &#123;asyn-thread-2&#125; ERROR com.sohu.cache.redis.impl.RedisCenterImpl - [redis-lastInfoMap] : lastCollectTime = 201606271418 appId=10020 host:port = 10.10.xx.xx:63xx is null</div><div class="line">2016-06-27 14:19:24.260 &#123;asyn-thread-2&#125; ERROR com.sohu.cache.redis.impl.RedisCenterImpl - [redis-lastInfoMap] : lastCollectTime = 201606271418 appId=10045 host:port = 10.10.xx.xx:63xx is null</div></pre></td></tr></table></figure></p>
+<h4 id="15-protected-mode产生的异常"><a href="#15-protected-mode产生的异常" class="headerlink" title="15. protected-mode产生的异常"></a>15. protected-mode产生的异常</h4><p>Redis 3.2开始提供了protected-mode(虽然比较鸡肋)，而且它是默认开启的，如果使用CacheCloud部署时，可能会产生如下异常：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ERROR com.sohu.cache.redis.impl.RedisDeployCenterImpl$6 - DENIED Redis is running in protected mode because protected mode is enabled, no bind address was specified, no authentication password is requested to clients. In this mode connections are only accepted from the loopback interface. If you want to connect from external computers to Redis you may adopt one of the following solutions: 1) Just disable protected mode sending the command &apos;CONFIG SET protected-mode no&apos; from the loopback interface by connecting to Redis from the same host the server is running, however MAKE SURE Redis is not publicly accessible from internet if you do so. Use CONFIG REWRITE to make this change permanent. 2) Alternatively you can just disable the protected mode by editing the Redis configuration file, and setting the protected mode option to &apos;no&apos;, and then restarting the server. 3) If you started the server manually just for testing, restart it with the &apos;--protected-mode no&apos; option. 4) Setup a bind address or an authentication password. NOTE: You only need to do one of the above things in order for the server to start accepting connections from the outside.</div></pre></td></tr></table></figure></p>
+<p>原因很简单，CacheCloud的默认配置模板里面没有添加protected-mode，那么配置就默认为true，但是当在多台机器部署时，需要多个节点可以通信，那么protected-mode为true会造成通信失败(当然这个也要看requirepass)，具体解决方法参考下面链接中的问题三。<br><a href="https://cachecloud.github.io/2016/07/13/1.2.%20Redis%E9%85%8D%E7%BD%AE%E6%A8%A1%E6%9D%BF%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" target="_blank" rel="external">https://cachecloud.github.io/2016/07/13/1.2.%20Redis%E9%85%8D%E7%BD%AE%E6%A8%A1%E6%9D%BF%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/</a></p>
+<p>………………….<strong>待续</strong>……………………..</p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/12/CacheCloud文档归档/" rel="next" title="CacheCloud-资源归档">
+                <i class="fa fa-chevron-left"></i> CacheCloud-资源归档
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/12/bug修复日志/" rel="prev" title="CacheCloud-功能升级和Bug修复日志">
+                CacheCloud-功能升级和Bug修复日志 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/04/12/CacheCloud常见问题/"
+           data-title="CacheCloud-部署使用常见问题(待续)" data-url="http://yoursite.com/2016/04/12/CacheCloud常见问题/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-界面出现乱码"><span class="nav-number">1.</span> <span class="nav-text">1.界面出现乱码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-初始化脚本cachecloud-init-sh运行失败"><span class="nav-number">2.</span> <span class="nav-text">2.初始化脚本cachecloud-init.sh运行失败</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-用户密码在哪"><span class="nav-number">3.</span> <span class="nav-text">3.用户密码在哪</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-CacheCloud与Codis"><span class="nav-number">4.</span> <span class="nav-text">4.CacheCloud与Codis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-CacheCloud是客户端到Redis的代理吗？"><span class="nav-number">5.</span> <span class="nav-text">5.CacheCloud是客户端到Redis的代理吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-CacheCloud如何与服务器”打交道”"><span class="nav-number">6.</span> <span class="nav-text">6.CacheCloud如何与服务器”打交道”</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#6-1实现方式"><span class="nav-number">6.1.</span> <span class="nav-text">6.1实现方式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-2-ssh安全吗？有其他方式吗？"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 ssh安全吗？有其他方式吗？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-”之前”的Redis如何托管给CacheCloud管理："><span class="nav-number">7.</span> <span class="nav-text">7.”之前”的Redis如何托管给CacheCloud管理：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-实例下线和心跳停止？"><span class="nav-number">8.</span> <span class="nav-text">8.实例下线和心跳停止？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-配置修改是对实例下所有实例进行修改吗？"><span class="nav-number">9.</span> <span class="nav-text">9. 配置修改是对实例下所有实例进行修改吗？</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#如果想修改一个实例配置怎么办？"><span class="nav-number">9.0.1.</span> <span class="nav-text">如果想修改一个实例配置怎么办？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-启动jvm报错："><span class="nav-number">10.</span> <span class="nav-text">10. 启动jvm报错：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-机器管理中删除机器做了什么？"><span class="nav-number">11.</span> <span class="nav-text">11.机器管理中删除机器做了什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-CacheCloud都有哪些报警信息"><span class="nav-number">12.</span> <span class="nav-text">12. CacheCloud都有哪些报警信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-CacheCloud的命令统计信息是如何收集"><span class="nav-number">13.</span> <span class="nav-text">13. CacheCloud的命令统计信息是如何收集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-重要日志说明"><span class="nav-number">14.</span> <span class="nav-text">14. 重要日志说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-protected-mode产生的异常"><span class="nav-number">15.</span> <span class="nav-text">15. protected-mode产生的异常</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

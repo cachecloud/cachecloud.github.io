@@ -1,0 +1,1268 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。Redis所有的数据都在内存中，而内存又是非常宝贵的资源。对于如何优化内存使用一直是Redis用户非常关注的问题。本文让我们深入到Redis细节中，学习内存优化的技巧。分为如下几个部分： 一. redisObject对象二. 缩减键值对象三. 共享对象池四. 字">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis的内存优化">
+<meta property="og:url" content="http://yoursite.com/2017/02/16/Redis内存优化/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。Redis所有的数据都在内存中，而内存又是非常宝贵的资源。对于如何优化内存使用一直是Redis用户非常关注的问题。本文让我们深入到Redis细节中，学习内存优化的技巧。分为如下几个部分： 一. redisObject对象二. 缩减键值对象三. 共享对象池四. 字">
+<meta property="og:image" content="http://i1.itc.cn/20170216/3084_2c3a0c00_6cbc_c4d9_01fe_8852cc497653_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170216/3084_8e427aa5_bf49_c714_45f8_692fccf2cd6b_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20170216/3084_ffd40aaf_b79c_0c62_9751_650a6b0ccc53_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170216/3084_54bb9bb0_a89d_8e7e_2edb_11fcfc6ee5f1_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170216/3084_348deb09_9394_4809_f74f_638d4a8cc902_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170216/3084_ea8adf90_7c43_cff3_2bf8_7426f0fa60de_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170216/3084_0a3583f6_57d1_9c73_95b9_13bd067bc3c9_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170216/3084_706c9e3a_9b61_95c5_69ac_f46b88d41bc5_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170216/3084_8e48faac_2a3e_51f4_d602_1fb45a002892_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170216/3084_5417a9b7_6050_0614_09f1_ce8565f04eca_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170216/3084_d48315af_6789_08d6_823d_beec6378e7da_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170216/3084_4c9daaae_5820_6cf4_dcdb_83f29c1afc4f_1.jpg">
+<meta property="og:updated_time" content="2017-03-03T01:37:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis的内存优化">
+<meta name="twitter:description" content="声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。Redis所有的数据都在内存中，而内存又是非常宝贵的资源。对于如何优化内存使用一直是Redis用户非常关注的问题。本文让我们深入到Redis细节中，学习内存优化的技巧。分为如下几个部分： 一. redisObject对象二. 缩减键值对象三. 共享对象池四. 字">
+<meta name="twitter:image" content="http://i1.itc.cn/20170216/3084_2c3a0c00_6cbc_c4d9_01fe_8852cc497653_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Redis的内存优化 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Redis的内存优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-16T17:20:00+08:00" content="2017-02-16">
+              2017-02-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Redis开发与运维/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis开发与运维</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/02/16/Redis内存优化/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/16/Redis内存优化/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/02/16/Redis内存优化/" class="leancloud_visitors" data-flag-title="Redis的内存优化">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。"><a href="#声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。" class="headerlink" title="声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。"></a>声明：本文内容来自<a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external">《Redis开发与运维》</a>一书第八章，如转载请声明。另外，<a href="https://cachecloud.github.io/2017/03/01/Redis%E5%BC%80%E5%8F%91%E4%B8%8E%E8%BF%90%E7%BB%B4-%E5%9B%BE%E4%B9%A6%E6%8A%BD%E5%A5%96%E8%A7%84%E5%88%99/" target="_blank" rel="external">《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本</a>。</h3><p>Redis所有的数据都在内存中，而内存又是非常宝贵的资源。对于如何优化内存使用一直是Redis用户非常关注的问题。本文让我们深入到Redis细节中，学习内存优化的技巧。分为如下几个部分：</p>
+<p>一. <a href="#chapter1">redisObject对象</a><br>二. <a href="#chapter2">缩减键值对象</a><br>三. <a href="#chapter3">共享对象池</a><br>四. <a href="#chapter4">字符串优化</a><br>五. <a href="#chapter5">编码优化</a><br>六. <a href="#chapter6">控制key的数量</a></p>
+<p><a name="chapter1"></a></p>
+<h2 id="一-redisObject对象"><a href="#一-redisObject对象" class="headerlink" title="一. redisObject对象"></a>一. redisObject对象</h2><p>Redis存储的所有值对象在内部定义为redisObject结构体，内部结构如下图所示。</p>
+<p><img src="http://i1.itc.cn/20170216/3084_2c3a0c00_6cbc_c4d9_01fe_8852cc497653_1.png" alt=""></p>
+<p>Redis存储的数据都使用redisObject来封装，包括string,hash,list,set,zset在内的所有数据类型。理解redisObject对内存优化非常有帮助，下面针对每个字段做详细说明：</p>
+<a id="more"></a>
+<h3 id="1-type字段"><a href="#1-type字段" class="headerlink" title="1.type字段:"></a>1.type字段:</h3><p>表示当前对象使用的数据类型，Redis主要支持5种数据类型:string,hash,list,set,zset。可以使用type {key}命令查看对象所属类型，type命令返回的是值对象类型，键都是string类型。</p>
+<h3 id="2-encoding字段"><a href="#2-encoding字段" class="headerlink" title="2.encoding字段:"></a>2.encoding字段:</h3><p>表示Redis内部编码类型，encoding在Redis内部使用，代表当前对象内部采用哪种数据结构实现。理解Redis内部编码方式对于优化内存非常重要 ，同一个对象采用不同的编码实现内存占用存在明显差异，具体细节见之后编码优化部分。</p>
+<h3 id="3-lru字段"><a href="#3-lru字段" class="headerlink" title="3.lru字段:"></a>3.lru字段:</h3><p>记录对象最后一次被访问的时间，当配置了 maxmemory和maxmemory-policy=volatile-lru | allkeys-lru 时， 用于辅助LRU算法删除键数据。可以使用object idletime {key}命令在不更新lru字段情况下查看当前键的空闲时间。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">开发提示：可以使用scan + object idletime  命令批量查询哪些键长时间未被访问，找出长时间不访问的键进行清理降低内存占用。</div></pre></td></tr></table></figure>
+<h3 id="4-refcount字段"><a href="#4-refcount字段" class="headerlink" title="4.refcount字段:"></a>4.refcount字段:</h3><p>记录当前对象被引用的次数，用于通过引用次数回收内存，当refcount=0时，可以安全回收当前对象空间。使用object refcount {key}获取当前对象引用。当对象为整数且范围在[0-9999]时，Redis可以使用共享对象的方式来节省内存。具体细节见之后共享对象池部分。</p>
+<h3 id="5-ptr字段"><a href="#5-ptr字段" class="headerlink" title="5. *ptr字段:"></a>5. *ptr字段:</h3><p>与对象的数据内容相关，如果是整数直接存储数据，否则表示指向数据的指针。Redis在3.0之后对值对象是字符串且长度&lt;=39字节的数据，内部编码为embstr类型，字符串sds和redisObject一起分配，从而只要一次内存操作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">开发提示：高并发写入场景中，在条件允许的情况下建议字符串长度控制在39字节以内，减少创建redisObject内存分配次数从而提高性能。</div></pre></td></tr></table></figure>
+<p><a name="chapter2"></a></p>
+<h2 id="二-缩减键值对象"><a href="#二-缩减键值对象" class="headerlink" title="二. 缩减键值对象"></a>二. 缩减键值对象</h2><p>降低Redis内存使用最直接的方式就是缩减键（key）和值（value）的长度。</p>
+<ul>
+<li><p>key长度：如在设计键时，在完整描述业务情况下，键值越短越好。</p>
+</li>
+<li><p>value长度：值对象缩减比较复杂，常见需求是把业务对象序列化成二进制数组放入Redis。首先应该在业务上精简业务对象，去掉不必要的属性避免存储无效数据。其次在序列化工具选择上，应该选择更高效的序列化工具来降低字节数组大小。以JAVA为例，内置的序列化方式无论从速度还是压缩比都不尽如人意，这时可以选择更高效的序列化工具，如: protostuff，kryo等，下图是JAVA常见序列化工具空间压缩对比。</p>
+</li>
+</ul>
+<p><img src="http://i2.itc.cn/20170216/3084_8e427aa5_bf49_c714_45f8_692fccf2cd6b_1.png" alt=""></p>
+<p>其中java-built-in-serializer表示JAVA内置序列化方式，更多数据见jvm-serializers项目:<a href="https://github.com/eishay/jvm-serializers/wiki，其它语言也有各自对应的高效序列化工具。" target="_blank" rel="external">https://github.com/eishay/jvm-serializers/wiki，其它语言也有各自对应的高效序列化工具。</a></p>
+<p>值对象除了存储二进制数据之外，通常还会使用通用格式存储数据比如:json，xml等作为字符串存储在Redis中。这种方式优点是方便调试和跨语言，但是同样的数据相比字节数组所需的空间更大，在内存紧张的情况下，可以使用通用压缩算法压缩json,xml后再存入Redis，从而降低内存占用，例如使用GZIP压缩后的json可降低约60%的空间。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">开发提示：当频繁压缩解压json等文本数据时，开发人员需要考虑压缩速度和计算开销成本，这里推荐使用google的Snappy压缩工具，在特定的压缩率情况下效率远远高于GZIP等传统压缩工具，且支持所有主流语言环境。</div></pre></td></tr></table></figure>
+<p><a name="chapter3"></a></p>
+<h2 id="三-共享对象池"><a href="#三-共享对象池" class="headerlink" title="三. 共享对象池"></a>三. 共享对象池</h2><p>对象共享池指Redis内部维护[0-9999]的整数对象池。创建大量的整数类型redisObject存在内存开销，每个redisObject内部结构至少占16字节，甚至超过了整数自身空间消耗。所以Redis内存维护一个[0-9999]的整数对象池，用于节约内存。 除了整数值对象，其他类型如list,hash,set,zset内部元素也可以使用整数对象池。因此开发中在满足需求的前提下，尽量使用整数对象以节省内存。<br>整数对象池在Redis中通过变量REDIS_SHARED_INTEGERS定义，不能通过配置修改。可以通过object refcount 命令查看对象引用数验证是否启用整数对象池技术，如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">redis&gt; set foo 100 </div><div class="line">OK</div><div class="line">redis&gt; object refcount foo</div><div class="line">(integer) 2</div><div class="line">redis&gt; set bar 100</div><div class="line">OK</div><div class="line">redis&gt; object refcount bar</div><div class="line">(integer) 3</div></pre></td></tr></table></figure>
+<p>设置键foo等于100时，直接使用共享池内整数对象，因此引用数是2，再设置键bar等于100时，引用数又变为3，如下图所示。</p>
+<p><img src="http://i0.itc.cn/20170216/3084_ffd40aaf_b79c_0c62_9751_650a6b0ccc53_1.png" alt=""></p>
+<p>使用整数对象池究竟能降低多少内存？让我们通过测试来对比对象池的内存优化效果，如下表所示。</p>
+<table>
+<thead>
+<tr>
+<th>操作说明</th>
+<th>是否对象共享</th>
+<th>key大小</th>
+<th>value大小</th>
+<th>used_mem</th>
+<th>used_memory_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插入200万</td>
+<td>否</td>
+<td>20字节</td>
+<td>[0-9999]整数</td>
+<td>199.91MB</td>
+<td>205.28MB</td>
+</tr>
+<tr>
+<td>插入200万</td>
+<td>是</td>
+<td>20字节</td>
+<td>[0-9999]整数</td>
+<td>138.87MB</td>
+<td>143.28MB</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">注意本文所有测试环境都保持一致，信息如下:</div><div class="line">服务器信息: cpu=Intel-Xeon E5606@2.13GHz memory=32GB</div><div class="line">Redis版本:Redis server v=3.0.7 sha=00000000:0 malloc=jemalloc-3.6.0 bits=64</div></pre></td></tr></table></figure>
+<p>使用共享对象池后，相同的数据内存使用降低30%以上。可见当数据大量使用[0-9999]的整数时，共享对象池可以节约大量内存。需要注意的是对象池并不是只要存储[0-9999]的整数就可以工作。当设置maxmemory并启用LRU相关淘汰策略如:volatile-lru，allkeys-lru时，Redis禁止使用共享对象池，测试命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">redis&gt; set key:1 99</div><div class="line">OK //设置key:1=99</div><div class="line">redis&gt; object refcount key:1</div><div class="line">(integer) 2 //使用了对象共享,引用数为2</div><div class="line">redis&gt; config set maxmemory-policy volatile-lru</div><div class="line">OK //开启LRU淘汰策略</div><div class="line">redis&gt; set key:2 99</div><div class="line">OK //设置key:2=99</div><div class="line">redis&gt; object refcount key:2</div><div class="line">(integer) 3 //使用了对象共享,引用数变为3</div><div class="line">redis&gt; config set maxmemory 1GB</div><div class="line">OK //设置最大可用内存</div><div class="line">redis&gt; set key:3 99</div><div class="line">OK //设置key:3=99</div><div class="line">redis&gt; object refcount key:3</div><div class="line">(integer) 1 //未使用对象共享,引用数为1</div><div class="line">redis&gt; config set maxmemory-policy volatile-ttl</div><div class="line">OK //设置非LRU淘汰策略</div><div class="line">redis&gt; set key:4 99</div><div class="line">OK //设置key:4=99</div><div class="line">redis&gt; object refcount key:4</div><div class="line">(integer) 4 //又可以使用对象共享,引用数变为4</div></pre></td></tr></table></figure>
+<h4 id="为什么开启maxmemory和LRU淘汰策略后对象池无效"><a href="#为什么开启maxmemory和LRU淘汰策略后对象池无效" class="headerlink" title="为什么开启maxmemory和LRU淘汰策略后对象池无效?"></a>为什么开启maxmemory和LRU淘汰策略后对象池无效?</h4><p>LRU算法需要获取对象最后被访问时间，以便淘汰最长未访问数据，每个对象最后访问时间存储在redisObject对象的lru字段。对象共享意味着多个引用共享同一个redisObject，这时lru字段也会被共享，导致无法获取每个对象的最后访问时间。如果没有设置maxmemory，直到内存被用尽Redis也不会触发内存回收，所以共享对象池可以正常工作。</p>
+<p>综上所述，共享对象池与maxmemory+LRU策略冲突，使用时需要注意。 对于ziplist编码的值对象，即使内部数据为整数也无法使用共享对象池，因为ziplist使用压缩且内存连续的结构，对象共享判断成本过高，ziplist编码细节后面内容详细说明。</p>
+<h4 id="为什么只有整数对象池？"><a href="#为什么只有整数对象池？" class="headerlink" title="为什么只有整数对象池？"></a>为什么只有整数对象池？</h4><p>首先整数对象池复用的几率最大，其次对象共享的一个关键操作就是判断相等性，Redis之所以只有整数对象池，是因为整数比较算法时间复杂度为O(1)，只保留一万个整数为了防止对象池浪费。如果是字符串判断相等性，时间复杂度变为O(n)，特别是长字符串更消耗性能(浮点数在Redis内部使用字符串存储)。对于更复杂的数据结构如hash,list等，相等性判断需要O(n<sup>2</sup>)。对于单线程的Redis来说，这样的开销显然不合理，因此Redis只保留整数共享对象池。</p>
+<p><a name="chapter4"></a></p>
+<h2 id="四-字符串优化"><a href="#四-字符串优化" class="headerlink" title="四. 字符串优化"></a>四. 字符串优化</h2><p>字符串对象是Redis内部最常用的数据类型。所有的键都是字符串类型， 值对象数据除了整数之外都使用字符串存储。比如执行命令:lpush cache:type “redis” “memcache” “tair” “levelDB” ，Redis首先创建”cache:type”键字符串，然后创建链表对象，链表对象内再包含四个字符串对象，排除Redis内部用到的字符串对象之外至少创建5个字符串对象。可见字符串对象在Redis内部使用非常广泛，因此深刻理解Redis字符串对于内存优化非常有帮助:</p>
+<h3 id="1-字符串结构"><a href="#1-字符串结构" class="headerlink" title="1.字符串结构"></a>1.字符串结构</h3><p>Redis没有采用原生C语言的字符串类型而是自己实现了字符串结构，内部简单动态字符串(simple dynamic string)，简称SDS。结构下图所示。</p>
+<p><img src="http://i2.itc.cn/20170216/3084_54bb9bb0_a89d_8e7e_2edb_11fcfc6ee5f1_1.png" alt="">   </p>
+<p>Redis自身实现的字符串结构有如下特点:</p>
+<ul>
+<li>O(1)时间复杂度获取：字符串长度，已用长度，未用长度。</li>
+<li>可用于保存字节数组，支持安全的二进制数据存储。</li>
+<li>内部实现空间预分配机制，降低内存再分配次数。</li>
+<li>惰性删除机制，字符串缩减后的空间不释放，作为预分配空间保留。</li>
+</ul>
+<h3 id="2-预分配机制"><a href="#2-预分配机制" class="headerlink" title="2.预分配机制"></a>2.预分配机制</h3><p>因为字符串(SDS)存在预分配机制，日常开发中要小心预分配带来的内存浪费，例如下表的测试用例。</p>
+<h4 id="表：字符串内存预分配测试"><a href="#表：字符串内存预分配测试" class="headerlink" title="表：字符串内存预分配测试"></a>表：字符串内存预分配测试</h4><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>数据量</th>
+<th>操作说明</th>
+<th>命令</th>
+<th>key大小</th>
+<th>value大小</th>
+<th>used_mem</th>
+<th>used_memory_rss</th>
+<th>mem_fragmentation_ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>阶段1</td>
+<td>200w</td>
+<td>新插入200w数据</td>
+<td>set</td>
+<td>20字节</td>
+<td>60字节</td>
+<td>321.98MB</td>
+<td>331.44MB</td>
+<td>1.02</td>
+</tr>
+<tr>
+<td>阶段2</td>
+<td>200w</td>
+<td>在阶段1上每个对象追加60字节数据</td>
+<td>append</td>
+<td>20字节</td>
+<td>60字节</td>
+<td>657.67MB</td>
+<td>752.80MB</td>
+<td>1.14</td>
+</tr>
+<tr>
+<td>阶段3</td>
+<td>200w</td>
+<td>重新插入200w数据</td>
+<td>set</td>
+<td>20字节</td>
+<td>120字节</td>
+<td>474.56MB</td>
+<td>482.45MB</td>
+<td>1.02</td>
+</tr>
+</tbody>
+</table>
+<p>从测试数据可以看出，同样的数据追加后内存消耗非常严重，下面我们结合图来分析这一现象。阶段1每个字符串对象空间占用如下图所示。</p>
+<p><img src="http://i3.itc.cn/20170216/3084_348deb09_9394_4809_f74f_638d4a8cc902_1.png" alt=""></p>
+<p>阶段1插入新的字符串后，free字段保留空间为0，总占用空间=实际占用空间+1字节，最后1字节保存‘\0’标示结尾，这里忽略int类型len和free字段消耗的8字节。在阶段1原有字符串上追加60字节数据空间占用如下图所示。</p>
+<p><img src="http://i2.itc.cn/20170216/3084_ea8adf90_7c43_cff3_2bf8_7426f0fa60de_1.png" alt=""> </p>
+<p>追加操作后字符串对象预分配了一倍容量作为预留空间，而且大量追加操作需要内存重新分配，造成内存碎片率(mem_fragmentation_ratio)上升。直接插入与阶段2相同数据的空间占用，如下图所示。</p>
+<p><img src="http://i1.itc.cn/20170216/3084_0a3583f6_57d1_9c73_95b9_13bd067bc3c9_1.png" alt=""></p>
+<p>阶段3直接插入同等数据后，相比阶段2节省了每个字符串对象预分配的空间，同时降低了碎片率。<br>字符串之所以采用预分配的方式是防止修改操作需要不断重分配内存和字节数据拷贝。但同样也会造成内存的浪费。字符串预分配每次并不都是翻倍扩容，空间预分配规则如下:</p>
+<ul>
+<li>1)    第一次创建len属性等于数据实际大小，free等于0，不做预分配。</li>
+<li>2)    修改后如果已有free空间不够且数据小于1M，每次预分配一倍容量。如原有len=60byte，free=0，再追加60byte，预分配120byte，总占用空间:60byte+60byte+120byte+1byte。</li>
+<li>3)    修改后如果已有free空间不够且数据大于1MB，每次预分配1MB数据。如原有len=30MB，free=0，当再追加100byte ,预分配1MB，总占用空间:1MB+100byte+1MB+1byte。<br>开发提示:尽量减少字符串频繁修改操作如append，setrange, 改为直接使用set修改字符串，降低预分配带来的内存浪费和内存碎片化。</li>
+</ul>
+<h3 id="3-字符串重构"><a href="#3-字符串重构" class="headerlink" title="3.字符串重构"></a>3.字符串重构</h3><p>字符串重构:指不一定把每份数据作为字符串整体存储，像json这样的数据可以使用hash结构，使用二级结构存储也能帮我们节省内存。同时可以使用hmget,hmset命令支持字段的部分读取修改，而不用每次整体存取。例如下面的json数据：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    &quot;vid&quot;: &quot;413368768&quot;,</div><div class="line">    &quot;title&quot;: &quot;搜狐屌丝男士&quot;,</div><div class="line">    &quot;videoAlbumPic&quot;: &quot;http://photocdn.sohu.com/60160518/vrsa_ver8400079_ae433_pic26.jpg&quot;,</div><div class="line">    &quot;pid&quot;: &quot;6494271&quot;,</div><div class="line">    &quot;type&quot;: &quot;1024&quot;,</div><div class="line">    &quot;playlist&quot;: &quot;6494271&quot;,</div><div class="line">    &quot;playTime&quot;: &quot;468&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>分别使用字符串和hash结构测试内存表现，如下表所示。</p>
+<h4 id="表：测试内存表现"><a href="#表：测试内存表现" class="headerlink" title="表：测试内存表现"></a>表：测试内存表现</h4><table>
+<thead>
+<tr>
+<th>数据量</th>
+<th>key</th>
+<th>存储类型</th>
+<th>value</th>
+<th>配置</th>
+<th>used_mem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200W</td>
+<td>20字节</td>
+<td>string</td>
+<td>json字符串</td>
+<td>默认</td>
+<td>612.62M</td>
+</tr>
+<tr>
+<td>200W</td>
+<td>20字节</td>
+<td>hash</td>
+<td>key-value对</td>
+<td>默认</td>
+<td>默认    1.88GB</td>
+</tr>
+<tr>
+<td>200W</td>
+<td>20字节</td>
+<td>hash</td>
+<td>key-value对</td>
+<td>hash-max-ziplist-value:66</td>
+<td>535.60M</td>
+</tr>
+</tbody>
+</table>
+<p>根据测试结构，第一次默认配置下使用hash类型，内存消耗不但没有降低反而比字符串存储多出2倍，而调整hash-max-ziplist-value=66之后内存降低为535.60M。因为json的videoAlbumPic属性长度是65，而hash-max-ziplist-value默认值是64，Redis采用hashtable编码方式，反而消耗了大量内存。调整配置后hash类型内部编码方式变为ziplist，相比字符串更省内存且支持属性的部分操作。下一节将具体介绍ziplist编码优化细节。</p>
+<p><a name="chapter5"></a></p>
+<h2 id="五-编码优化"><a href="#五-编码优化" class="headerlink" title="五. 编码优化"></a>五. 编码优化</h2><h3 id="1-了解编码"><a href="#1-了解编码" class="headerlink" title="1.了解编码"></a>1.了解编码</h3><p>Redis对外提供了string,list,hash,set,zet等类型，但是Redis内部针对不同类型存在编码的概念，所谓编码就是具体使用哪种底层数据结构来实现。编码不同将直接影响数据的内存占用和读写效率。使用object encoding {key}命令获取编码类型。如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">redis&gt; set str:1 hello</div><div class="line">OK</div><div class="line">redis&gt; object encoding str:1</div><div class="line">&quot;embstr&quot; // embstr编码字符串</div><div class="line">redis&gt; lpush list:1 1 2 3</div><div class="line">(integer) 3</div><div class="line">redis&gt; object encoding list:1</div><div class="line">&quot;ziplist&quot; // ziplist编码列表</div></pre></td></tr></table></figure>
+<p>Redis针对每种数据类型(type)可以采用至少两种编码方式来实现，下表表示type和encoding的对应关系。</p>
+<h4 id="表：type和encoding对应关系表"><a href="#表：type和encoding对应关系表" class="headerlink" title="表：type和encoding对应关系表"></a>表：type和encoding对应关系表</h4><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>编码方式</th>
+<th>数据结构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>string</td>
+<td>raw<br>embstr<br>int</td>
+<td>动态字符串编码<br>优化内存分配的字符串编码<br>整数编码</td>
+</tr>
+<tr>
+<td>hash</td>
+<td>hashtable<br>ziplist</td>
+<td>散列表编码<br>压缩列表编码</td>
+</tr>
+<tr>
+<td>list</td>
+<td>linkedlist<br>ziplist<br>quicklist<br></td>
+<td>双向链表编码<br>压缩列表编码<br>3.2版本新的列表编码</td>
+</tr>
+<tr>
+<td>set</td>
+<td>hashtable<br>intset</td>
+<td>散列表编码<br>整数集合编码</td>
+</tr>
+<tr>
+<td>zset</td>
+<td>skiplist<br>ziplist</td>
+<td>跳跃表编码<br>压缩列表编码</td>
+</tr>
+</tbody>
+</table>
+<p>了解编码和类型对应关系之后，我们不禁疑惑Redis为什么需要对一种数据结构实现多种编码方式？<br>主要原因是Redis作者想通过不同编码实现效率和空间的平衡。比如当我们的存储只有10个元素的列表，当使用双向链表数据结构时，必然需要维护大量的内部字段如每个元素需要:前置指针，后置指针，数据指针等，造成空间浪费，如果采用连续内存结构的压缩列表(ziplist)，将会节省大量内存，而由于数据长度较小，存取操作时间复杂度即使为O(n2)性能也可满足需求。</p>
+<p>Redis内存优化</p>
+<h3 id="2-控制编码类型"><a href="#2-控制编码类型" class="headerlink" title="2.控制编码类型"></a>2.控制编码类型</h3><p>编码类型转换在Redis写入数据时自动完成，这个转换过程是不可逆的，转换规则只能从小内存编码向大内存编码转换。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">redis&gt; lpush list:1 a b c d</div><div class="line">(integer) 4 //存储4个元素</div><div class="line">redis&gt; object encoding list:1</div><div class="line">&quot;ziplist&quot; //采用ziplist压缩列表编码</div><div class="line">redis&gt; config set list-max-ziplist-entries 4</div><div class="line">OK //设置列表类型ziplist编码最大允许4个元素</div><div class="line">redis&gt; lpush list:1 e</div><div class="line">(integer) 5 //写入第5个元素e</div><div class="line">redis&gt; object encoding list:1</div><div class="line">&quot;linkedlist&quot; //编码类型转换为链表</div><div class="line">redis&gt; rpop list:1</div><div class="line">&quot;a&quot; //弹出元素a</div><div class="line">redis&gt; llen list:1</div><div class="line">(integer) 4 // 列表此时有4个元素</div><div class="line">redis&gt; object encoding list:1</div><div class="line">&quot;linkedlist&quot; //编码类型依然为链表，未做编码回退</div></pre></td></tr></table></figure>
+<p>以上命令体现了list类型编码的转换过程，其中Redis之所以不支持编码回退，主要是数据增删频繁时，数据向压缩编码转换非常消耗CPU，得不偿失。以上示例用到了list-max-ziplist-entries参数，这个参数用来决定列表长度在多少范围内使用ziplist编码。当然还有其它参数控制各种数据类型的编码，如下表所示：</p>
+<h4 id="表：hash-list-set-zset内部编码配置"><a href="#表：hash-list-set-zset内部编码配置" class="headerlink" title="表：hash,list,set,zset内部编码配置"></a>表：hash,list,set,zset内部编码配置</h4><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>编码</th>
+<th>决定条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash</td>
+<td>ziplist</td>
+<td>满足所有条件:<br>value最大空间(字节)&lt;=hash-max-ziplist-value<br>field个数&lt;=hash-max-ziplist-entries</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>hashtable</td>
+<td>满足任意条件:<br>value最大空间(字节)&gt;hash-max-ziplist-value<br>field个数&gt;hash-max-ziplist-entries</td>
+</tr>
+<tr>
+<td>list</td>
+<td>ziplist</td>
+<td>ziplist    满足所有条件:<br>value最大空间(字节)&lt;=list-max-ziplist-value<br>链表长度&lt;=list-max-ziplist-entries</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>linkedlist</td>
+<td>满足任意条件<br>value最大空间(字节)&gt;list-max-ziplist-value<br>链表长度&gt;list-max-ziplist-entries</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>quicklist</td>
+<td>3.2版本新编码:<br>废弃list-max-ziplist-entries和list-max-ziplist-entries配置<br>使用新配置: <br>list-max-ziplist-size:表示最大压缩空间或长度,最大空间使用[-5-1]范围配置，默认-2表示8KB,正整数表示最大压缩长度<br>list-compress-depth:表示最大压缩深度，默认=0不压缩</td>
+</tr>
+<tr>
+<td>set</td>
+<td>intset</td>
+<td>满足所有条件:<br>元素必须为整数<br>集合长度&lt;=set-max-intset-entries</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>hashtable</td>
+<td>满足任意条件<br>元素非整数类型<br>集合长度&gt;hash-max-ziplist-entries</td>
+</tr>
+<tr>
+<td>zset</td>
+<td>ziplist</td>
+<td>满足所有条件:<br>value最大空间(字节)&lt;=zset-max-ziplist-value<br>有序集合长度&lt;=zset-max-ziplist-entries</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>skiplist</td>
+<td>满足任意条件:<br>value最大空间(字节)&gt;zset-max-ziplist-value<br>有序集合长度&gt;zset-max-ziplist-entries</td>
+</tr>
+</tbody>
+</table>
+<p>掌握编码转换机制，对我们通过编码来优化内存使用非常有帮助。下面以hash类型为例，介绍编码转换的运行流程，如下图所示。</p>
+<p><img src="http://i2.itc.cn/20170216/3084_706c9e3a_9b61_95c5_69ac_f46b88d41bc5_1.png" alt=""> </p>
+<p>理解编码转换流程和相关配置之后，可以使用config set命令设置编码相关参数来满足使用压缩编码的条件。对于已经采用非压缩编码类型的数据如hashtable,linkedlist等，设置参数后即使数据满足压缩编码条件，Redis也不会做转换，需要重启Redis重新加载数据才能完成转换。</p>
+<h3 id="3-ziplist编码"><a href="#3-ziplist编码" class="headerlink" title="3.ziplist编码"></a>3.ziplist编码</h3><p>ziplist编码主要目的是为了节约内存，因此所有数据都是采用线性连续的内存结构。ziplist编码是应用范围最广的一种，可以分别作为hash、list、zset类型的底层数据结构实现。首先从ziplist编码结构开始分析，它的内部结构类似这样:<zlbytes><zltail><zllen><entry-1><entry-2>&lt;….&gt;<entry-n><zlend>。一个ziplist可以包含多个entry(元素)，每个entry保存具体的数据(整数或者字节数组)，内部结构如下图所示。</zlend></entry-n></entry-2></entry-1></zllen></zltail></zlbytes></p>
+<p><img src="http://i1.itc.cn/20170216/3084_8e48faac_2a3e_51f4_d602_1fb45a002892_1.png" alt=""></p>
+<p>ziplist结构字段含义：</p>
+<ul>
+<li>1)    zlbytes:记录整个压缩列表所占字节长度，方便重新调整ziplist空间。类型是int-32，长度为4字节</li>
+<li>2)    zltail:记录距离尾节点的偏移量，方便尾节点弹出操作。类型是int-32，长度为4字节</li>
+<li>3)    zllen:记录压缩链表节点数量，当长度超过216-2时需要遍历整个列表获取长度，一般很少见。类型是int-16，长度为2字节</li>
+<li>4)    entry:记录具体的节点，长度根据实际存储的数据而定。 <ul>
+<li>a)    prev_entry_bytes_length:记录前一个节点所占空间，用于快速定位上一个节点，可实现列表反向迭代。</li>
+<li>b)    encoding:标示当前节点编码和长度，前两位表示编码类型：字符串/整数，其余位表示数据长度。 </li>
+<li>c)    contents:保存节点的值，针对实际数据长度做内存占用优化。</li>
+</ul>
+</li>
+<li>5)    zlend:记录列表结尾，占用一个字节。</li>
+</ul>
+<p>根据以上对ziplist字段说明，可以分析出该数据结构特点如下:</p>
+<ul>
+<li>1)    内部表现为数据紧凑排列的一块连续内存数组。</li>
+<li>2)    可以模拟双向链表结构，以O(1)时间复杂度入队和出队。</li>
+<li>3)    新增删除操作涉及内存重新分配或释放，加大了操作的复杂性。</li>
+<li>4)    读写操作涉及复杂的指针移动，最坏时间复杂度为O(n2)。</li>
+<li>5)    适合存储小对象和长度有限的数据。</li>
+</ul>
+<p>下面通过测试展示ziplist编码在不同类型中内存和速度的表现，如下表所示。</p>
+<h4 id="表：ziplist在hash-list-zset内存和速度测试"><a href="#表：ziplist在hash-list-zset内存和速度测试" class="headerlink" title="表：ziplist在hash,list,zset内存和速度测试"></a>表：ziplist在hash,list,zset内存和速度测试</h4><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>数据量</th>
+<th>key总数量</th>
+<th>长度</th>
+<th>value大小</th>
+<th>普通编码内存量/平均耗时</th>
+<th>压缩编码内存量/平均耗时</th>
+<th>内存降低比例</th>
+<th>耗时增长倍数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash</td>
+<td>100万</td>
+<td>1千</td>
+<td>1千</td>
+<td>36字节</td>
+<td>103.37M/0.84微秒</td>
+<td>43.83M/13.24微秒</td>
+<td>57.5%</td>
+<td>15倍</td>
+</tr>
+<tr>
+<td>list</td>
+<td>100万</td>
+<td>1千</td>
+<td>1千</td>
+<td>36字节</td>
+<td>92.46M/2.04微秒</td>
+<td>39.92M/5.45微秒</td>
+<td>56.8%</td>
+<td>2.5倍</td>
+<td></td>
+</tr>
+<tr>
+<td>zset</td>
+<td>100万</td>
+<td>1千</td>
+<td>1千</td>
+<td>36字节</td>
+<td>151.84M/1.85微秒</td>
+<td>43.83M/77.88微秒</td>
+<td>71%</td>
+<td>42倍</td>
+</tr>
+</tbody>
+</table>
+<p>测试数据采用100W个36字节数据，划分为1000个键，每个类型长度统一为1000。从测试结果可以看出：<br>1)    使用ziplist可以分别作为hash,list,zset数据类型实现。<br>2)    使用ziplist编码类型可以大幅降低内存占用。<br>3)    ziplist实现的数据类型相比原生结构，命令操作更加耗时，不同类型耗时排序:list &lt; hash &lt; zset。<br>ziplist压缩编码的性能表现跟值长度和元素个数密切相关，正因为如此Redis提供了{type}-max-ziplist-value和{type}-max-ziplist-entries相关参数来做控制ziplist编码转换。最后再次强调使用ziplist压缩编码的原则：追求空间和时间的平衡。<br>开发提示：<br>1）针对性能要求较高的场景使用ziplist，建议长度不要超过1000，每个元素大小控制在512字节以内。<br>2）命令平均耗时使用info Commandstats命令获取，包含每个命令调用次数，总耗时，平均耗时，单位微秒。</p>
+<h3 id="4-intset编码"><a href="#4-intset编码" class="headerlink" title="4.intset编码"></a>4.intset编码</h3><p>intset编码是集合(set)类型编码的一种，内部表现为存储有序，不重复的整数集。当集合只包含整数且长度不超过set-max-intset-entries配置时被启用。执行以下命令查看intset表现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">127.0.0.1:6379&gt; sadd set:test 3 4 2 6 8 9 2</div><div class="line">(integer) 6 //乱序写入6个整数</div><div class="line">127.0.0.1:6379&gt; object encoding set:test</div><div class="line">&quot;intset&quot; //使用intset编码</div><div class="line">127.0.0.1:6379&gt; smembers set:test</div><div class="line">&quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;6&quot; &quot;8&quot; &quot;9&quot; // 排序输出整数结合</div><div class="line">redis&gt; config set set-max-intset-entries 6</div><div class="line">OK //设置intset最大允许整数长度</div><div class="line">redis&gt; sadd set:test 5</div><div class="line">(integer) 1 //写入第7个整数 5</div><div class="line">redis&gt; object encoding set:test</div><div class="line">&quot;hashtable&quot; // 编码变为hashtable</div><div class="line">redis&gt; smembers set:test</div><div class="line">&quot;8&quot; &quot;3&quot; &quot;5&quot; &quot;9&quot; &quot;4&quot; &quot;2&quot; &quot;6&quot; //乱序输出</div></pre></td></tr></table></figure>
+<p>以上命令可以看出intset对写入整数进行排序，通过O(log(n))时间复杂度实现查找和去重操作，intset编码结构如下图所示。<br><img src="http://i1.itc.cn/20170216/3084_5417a9b7_6050_0614_09f1_ce8565f04eca_1.png" alt=""></p>
+<p>intset的字段结构含义：<br>1)    encoding:整数表示类型，根据集合内最长整数值确定类型，整数类型划分三种:int-16，int-32，int-64。<br>2)    length:表示集合元素个数。<br>3)    contents:整数数组，按从小到大顺序保存。<br>intset保存的整数类型根据长度划分，当保存的整数超出当前类型时，将会触发自动升级操作且升级后不再做回退。升级操作将会导致重新申请内存空间，把原有数据按转换类型后拷贝到新数组。<br>开发提示：使用intset编码的集合时，尽量保持整数范围一致，如都在int-16范围内。防止个别大整数触发集合升级操作，产生内存浪费。<br>下面通过测试查看ziplist编码的集合内存和速度表现，如下表所示。</p>
+<h4 id="表：ziplist编码在set下内存和速度表现"><a href="#表：ziplist编码在set下内存和速度表现" class="headerlink" title="表：ziplist编码在set下内存和速度表现"></a>表：ziplist编码在set下内存和速度表现</h4><table>
+<thead>
+<tr>
+<th>数据量</th>
+<th>key大小</th>
+<th>value大小</th>
+<th>编码</th>
+<th>集合长度</th>
+<th>内存量</th>
+<th>内存降低比例</th>
+<th>平均耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100w</td>
+<td>20byte</td>
+<td>7字节</td>
+<td>hashtable</td>
+<td>1千</td>
+<td>61.97MB</td>
+<td>–</td>
+<td>0.78毫秒</td>
+</tr>
+<tr>
+<td>100w</td>
+<td>20byte</td>
+<td>7字节</td>
+<td>intset</td>
+<td>1千</td>
+<td>4.77MB</td>
+<td>92.6%</td>
+<td>0.51毫秒</td>
+</tr>
+<tr>
+<td>100w</td>
+<td>20byte</td>
+<td>7字节</td>
+<td>ziplist</td>
+<td>1千</td>
+<td>8.67MB</td>
+<td>86.2%</td>
+<td>13.12毫秒</td>
+</tr>
+</tbody>
+</table>
+<p>根据以上测试结果发现intset表现非常好，同样的数据内存占用只有不到hashtable编码的十分之一。intset数据结构插入命令复杂度为O(n)，查询命令为O(log(n))，由于整数占用空间非常小，所以在集合长度可控的基础上，写入命令执行速度也会非常快，因此当使用整数集合时尽量使用intset编码。上表测试第三行把ziplist-hash类型也放入其中，主要因为intset编码必须存储整数，当集合内保存非整数数据时，无法使用intset实现内存优化。这时可以使用ziplist-hash类型对象模拟集合类型，hash的field当作集合中的元素，value设置为1字节占位符即可。使用ziplist编码的hash类型依然比使用hashtable编码的集合节省大量内存。</p>
+<p><a name="chapter6"></a></p>
+<h2 id="六-控制key的数量"><a href="#六-控制key的数量" class="headerlink" title="六 控制key的数量"></a>六 控制key的数量</h2><p>当使用Redis存储大量数据时，通常会存在大量键，过多的键同样会消耗大量内存。Redis本质是一个数据结构服务器，它为我们提供多种数据结构，如hash，list，set，zset 等结构。使用Redis时不要进入一个误区，大量使用get/set这样的API，把Redis当成Memcached使用。对于存储相同的数据内容利用Redis的数据结构降低外层键的数量，也可以节省大量内存。如下图所示，通过在客户端预估键规模，把大量键分组映射到多个hash结构中降低键的数量。</p>
+<p><img src="http://i1.itc.cn/20170216/3084_d48315af_6789_08d6_823d_beec6378e7da_1.png" alt=""></p>
+<p>hash结构降低键数量分析：</p>
+<ul>
+<li>根据键规模在客户端通过分组映射到一组hash对象中，如存在100万个键，可以映射到1000个hash中，每个hash保存1000个元素。</li>
+<li>hash的field可用于记录原始key字符串，方便哈希查找。</li>
+<li>hash的value保存原始值对象，确保不要超过hash-max-ziplist-value限制。<br>下面测试这种优化技巧的内存表现，如下表所示。</li>
+</ul>
+<h4 id="表：hash分组控制键规模测试"><a href="#表：hash分组控制键规模测试" class="headerlink" title="表：hash分组控制键规模测试"></a>表：hash分组控制键规模测试</h4><table>
+<thead>
+<tr>
+<th>数据量</th>
+<th>key大小</th>
+<th>value大小</th>
+<th>string类型占用内存</th>
+<th>hash-ziplist类型占用内存</th>
+<th>内存降低比例</th>
+<th>string:set平均耗时</th>
+<th>hash:hset平均耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200w</td>
+<td>20byte</td>
+<td>512byte</td>
+<td>1392.64MB</td>
+<td>1000.97MB</td>
+<td>28.1%</td>
+<td>2.13微秒</td>
+<td>21.28微秒</td>
+</tr>
+<tr>
+<td>200w</td>
+<td>20byte</td>
+<td>200byte</td>
+<td>596.62MB</td>
+<td>399.38MB</td>
+<td>33.1%</td>
+<td>1.49微秒</td>
+<td>16.08微秒</td>
+</tr>
+<tr>
+<td>200w</td>
+<td>20byte</td>
+<td>100byte</td>
+<td>382.99MB</td>
+<td>211.88MB</td>
+<td>44.6%</td>
+<td>1.30微秒</td>
+<td>14.92微秒</td>
+</tr>
+<tr>
+<td>200w</td>
+<td>20byte</td>
+<td>50byte</td>
+<td>291.46MB</td>
+<td>110.32MB</td>
+<td>62.1%</td>
+<td>1.28微秒</td>
+<td>13.48微秒</td>
+</tr>
+<tr>
+<td>200w</td>
+<td>20byte</td>
+<td>20byte</td>
+<td>246.40MB</td>
+<td>55.63MB</td>
+<td>77.4%</td>
+<td>1.10微秒</td>
+<td>13.21微秒</td>
+</tr>
+<tr>
+<td>200w</td>
+<td>20byte</td>
+<td>5byte</td>
+<td>199.93MB</td>
+<td>24.42MB</td>
+<td>87.7%</td>
+<td>1.10微秒</td>
+<td>13.06微秒</td>
+</tr>
+</tbody>
+</table>
+<p>通过这个测试数据，可以说明：</p>
+<ul>
+<li>同样的数据使用ziplist编码的hash类型存储比string类型节约内存</li>
+<li>节省内存量随着value空间的减少，越来越明显。</li>
+<li>hash-ziplist类型比string类型写入耗时，但随着value空间的减少，耗时逐渐降低。<br>使用hash重构后节省内存量效果非常明显，特变对于存储小对象的场景，内存只有不到原来的1/5。下面分析这种内存优化技巧的关键点：<br>1)    hash类型节省内存的原理是使用ziplist编码，如果使用hashtable编码方式反而会增加内存消耗。<br>2)    ziplist长度需要控制在1000以内，否则由于存取操作时间复杂度在O(n)到O(n2)之间，长列表会导致CPU消耗严重，得不偿失。<br>3)    ziplist适合存储的小对象，对于大对象不但内存优化效果不明显还会增加命令操作耗时。<br>4)    需要预估键的规模，从而确定每个hash结构需要存储的元素数量。<br>5)    根据hash长度和元素大小，调整hash-max-ziplist-entries和hash-max-ziplist-value参数，确保hash类型使用ziplist编码。</li>
+</ul>
+<p>关于hash键和field键的设计：<br>1)    当键离散度较高时，可以按字符串位截取，把后三位作为哈希的field，之前部分作为哈希的键。如：key=1948480 哈希key=group:hash:1948，哈希field=480。<br>2)    当键离散度较低时，可以使用哈希算法打散键，如:使用crc32(key)&amp;10000函数把所有的键映射到“0-9999”整数范围内，哈希field存储键的原始值。<br>3)    尽量减少hash键和field的长度，如使用部分键内容。</p>
+<p>使用hash结构控制键的规模虽然可以大幅降低内存，但同样会带来问题，需要提前做好规避处理。如下:</p>
+<ol>
+<li>客户端需要预估键的规模并设计hash分组规则，加重客户端开发成本。</li>
+<li>hash重构后所有的键无法再使用超时(expire)和LRU淘汰机制自动删除，需要手动维护删除。</li>
+<li>对于大对象，如1KB以上的对象。使用hash-ziplist结构控制键数量。<br>不过瑕不掩瑜，对于大量小对象的存储场景，非常适合使用ziplist编码的hash类型控制键的规模来降低内存。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">开发提示：使用ziplist+hash优化keys后，如果想使用超时删除功能，开发人员可以存储每个对象写入的时间，再通过定时任务使用hscan命令扫描数据，找出hash内超时的数据项删除即可。</div></pre></td></tr></table></figure>
+<p>本文主要讲解Redis内存优化技巧，Redis的数据特性是”ALL IN MEMORY”，优化内存将变得非常重要。对于内存优化建议读者先要掌握Redis内存存储的特性比如字符串，压缩编码，整数集合等，再根据数据规模和所用命令需求去调整，从而达到空间和效率的最佳平衡。建议使用Redis存储大量数据时，把内存优化环节加入到前期设计阶段，否则数据大幅增长后，开发人员需要面对重新优化内存所带来开发和数据迁移的双重成本。当Redis内存不足时，首先考虑的问题不是加机器做水平扩展，应该先尝试做内存优化。当遇到瓶颈时，再去考虑水平扩展。即使对于集群化方案，垂直层面优化也同样重要，避免不必要的资源浪费和集群化后的管理成本。</p>
+<p>###　目前<a href="https://item.jd.com/12121730.html" target="_blank" rel="external">京东</a>、<a href="http://product.china-pub.com/5173109" target="_blank" rel="external">china-pub</a>已经预售，欢迎关注。</p>
+<p><a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external"><img src="http://i2.itc.cn/20170216/3084_4c9daaae_5820_6cf4_dcdb_83f29c1afc4f_1.jpg" alt=""></a></p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/16/Redis的Linux系统优化/" rel="next" title="Redis的Linux系统优化">
+                <i class="fa fa-chevron-left"></i> Redis的Linux系统优化
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/17/《Redis开发与运维》勘误/" rel="prev" title="《Redis开发与运维》勘误列表">
+                《Redis开发与运维》勘误列表 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/02/16/Redis内存优化/"
+           data-title="Redis的内存优化" data-url="http://yoursite.com/2017/02/16/Redis内存优化/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。"><span class="nav-number">1.</span> <span class="nav-text">声明：本文内容来自《Redis开发与运维》一书第八章，如转载请声明。另外，《Redis开发与运维》正在进行送书活动，欢迎参与，一共10本。</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一-redisObject对象"><span class="nav-number"></span> <span class="nav-text">一. redisObject对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-type字段"><span class="nav-number">1.</span> <span class="nav-text">1.type字段:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-encoding字段"><span class="nav-number">2.</span> <span class="nav-text">2.encoding字段:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-lru字段"><span class="nav-number">3.</span> <span class="nav-text">3.lru字段:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-refcount字段"><span class="nav-number">4.</span> <span class="nav-text">4.refcount字段:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-ptr字段"><span class="nav-number">5.</span> <span class="nav-text">5. *ptr字段:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-缩减键值对象"><span class="nav-number"></span> <span class="nav-text">二. 缩减键值对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-共享对象池"><span class="nav-number"></span> <span class="nav-text">三. 共享对象池</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么开启maxmemory和LRU淘汰策略后对象池无效"><span class="nav-number">0.1.</span> <span class="nav-text">为什么开启maxmemory和LRU淘汰策略后对象池无效?</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么只有整数对象池？"><span class="nav-number">0.2.</span> <span class="nav-text">为什么只有整数对象池？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-字符串优化"><span class="nav-number"></span> <span class="nav-text">四. 字符串优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-字符串结构"><span class="nav-number">1.</span> <span class="nav-text">1.字符串结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-预分配机制"><span class="nav-number">2.</span> <span class="nav-text">2.预分配机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：字符串内存预分配测试"><span class="nav-number">2.1.</span> <span class="nav-text">表：字符串内存预分配测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-字符串重构"><span class="nav-number">3.</span> <span class="nav-text">3.字符串重构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：测试内存表现"><span class="nav-number">3.1.</span> <span class="nav-text">表：测试内存表现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-编码优化"><span class="nav-number"></span> <span class="nav-text">五. 编码优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-了解编码"><span class="nav-number">1.</span> <span class="nav-text">1.了解编码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：type和encoding对应关系表"><span class="nav-number">1.1.</span> <span class="nav-text">表：type和encoding对应关系表</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-控制编码类型"><span class="nav-number">2.</span> <span class="nav-text">2.控制编码类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：hash-list-set-zset内部编码配置"><span class="nav-number">2.1.</span> <span class="nav-text">表：hash,list,set,zset内部编码配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-ziplist编码"><span class="nav-number">3.</span> <span class="nav-text">3.ziplist编码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：ziplist在hash-list-zset内存和速度测试"><span class="nav-number">3.1.</span> <span class="nav-text">表：ziplist在hash,list,zset内存和速度测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-intset编码"><span class="nav-number">4.</span> <span class="nav-text">4.intset编码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：ziplist编码在set下内存和速度表现"><span class="nav-number">4.1.</span> <span class="nav-text">表：ziplist编码在set下内存和速度表现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-控制key的数量"><span class="nav-number"></span> <span class="nav-text">六 控制key的数量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表：hash分组控制键规模测试"><span class="nav-number">0.1.</span> <span class="nav-text">表：hash分组控制键规模测试</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

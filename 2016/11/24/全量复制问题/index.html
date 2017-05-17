@@ -1,0 +1,763 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文部分内容来自《Redis开发与运维》一书，转载请声明。一、现象和危害线上有台机器内存接近了90%，总内存为24G，整个部署如下图：  现要将Redis-2迁移走，由于特殊原因此节点没有slave节点，需要添加一个slave节点，然后做failover操作。  通过对日志的观察，发现主从不停地做全量复制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis无限全量复制问题分析与优化">
+<meta property="og:url" content="http://yoursite.com/2016/11/24/全量复制问题/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="本文部分内容来自《Redis开发与运维》一书，转载请声明。一、现象和危害线上有台机器内存接近了90%，总内存为24G，整个部署如下图：  现要将Redis-2迁移走，由于特殊原因此节点没有slave节点，需要添加一个slave节点，然后做failover操作。  通过对日志的观察，发现主从不停地做全量复制。">
+<meta property="og:image" content="http://i3.itc.cn/20161124/3084_942324f9_f1fe_07d1_9604_bb279ba0c095_1.jpg">
+<meta property="og:image" content="http://i3.itc.cn/20161124/3084_60720f13_6f4e_61a5_44bb_02101ea3019a_1.jpg">
+<meta property="og:image" content="http://i0.itc.cn/20161124/3084_6a4131ac_5d59_5895_1b8e_ce2a546dbeaa_1.jpg">
+<meta property="og:image" content="http://i1.itc.cn/20161124/3084_88a14c78_bf0c_a04a_4d95_4dca7f59d0fb_1.png">
+<meta property="og:updated_time" content="2016-11-30T03:19:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis无限全量复制问题分析与优化">
+<meta name="twitter:description" content="本文部分内容来自《Redis开发与运维》一书，转载请声明。一、现象和危害线上有台机器内存接近了90%，总内存为24G，整个部署如下图：  现要将Redis-2迁移走，由于特殊原因此节点没有slave节点，需要添加一个slave节点，然后做failover操作。  通过对日志的观察，发现主从不停地做全量复制。">
+<meta name="twitter:image" content="http://i3.itc.cn/20161124/3084_942324f9_f1fe_07d1_9604_bb279ba0c095_1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Redis无限全量复制问题分析与优化 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Redis无限全量复制问题分析与优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-11-24T17:20:00+08:00" content="2016-11-24">
+              2016-11-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/11/24/全量复制问题/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/24/全量复制问题/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/11/24/全量复制问题/" class="leancloud_visitors" data-flag-title="Redis无限全量复制问题分析与优化">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="本文部分内容来自《Redis开发与运维》一书，转载请声明。"><a href="#本文部分内容来自《Redis开发与运维》一书，转载请声明。" class="headerlink" title="本文部分内容来自《Redis开发与运维》一书，转载请声明。"></a>本文部分内容来自<a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external">《Redis开发与运维》</a>一书，转载请声明。</h3><h3 id="一、现象和危害"><a href="#一、现象和危害" class="headerlink" title="一、现象和危害"></a>一、现象和危害</h3><p>线上有台机器内存接近了90%，总内存为24G，整个部署如下图：</p>
+<p><img src="http://i3.itc.cn/20161124/3084_942324f9_f1fe_07d1_9604_bb279ba0c095_1.jpg" alt=""></p>
+<p>现要将Redis-2迁移走，由于特殊原因此节点没有slave节点，需要添加一个slave节点，然后做failover操作。</p>
+<p><img src="http://i3.itc.cn/20161124/3084_60720f13_6f4e_61a5_44bb_02101ea3019a_1.jpg" alt=""></p>
+<p>通过对日志的观察，发现主从不停地做全量复制。</p>
+<a id="more"></a>
+<p>1.slave首次连接master做全量复制。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">36207:S 23 Nov 21:39:43.086 * Connecting to MASTER 10.10.xx.200:6390</div><div class="line">36207:S 23 Nov 21:39:43.086 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">36207:S 23 Nov 21:39:43.087 * Non blocking connect for SYNC fired the event.</div><div class="line">36207:S 23 Nov 21:39:43.087 * Master replied to PING, replication can continue...</div><div class="line">36207:S 23 Nov 21:39:43.087 * (Non critical) Master does not understand REPLCONF capa: -ERR Unrecognized REPLCONF option: capa</div><div class="line">36207:S 23 Nov 21:39:43.087 * Partial resynchronization not possible (no cached master)</div><div class="line">36207:S 23 Nov 21:39:43.096 * Full resync from master: e3e319f97545661d820bc573c3f9e0436789d912:1</div><div class="line">36207:S 23 Nov 21:39:43.302 # CONFIG REWRITE executed with success.</div><div class="line">36207:S 23 Nov 21:40:28.268 * MASTER &lt;-&gt; SLAVE sync: receiving 2203990784 bytes from master</div><div class="line">36207:S 23 Nov 21:41:12.721 * MASTER &lt;-&gt; SLAVE sync: Flushing old data</div><div class="line">36207:S 23 Nov 21:41:12.721 * MASTER &lt;-&gt; SLAVE sync: Loading DB in memory</div><div class="line">36207:S 23 Nov 21:42:24.117 * MASTER &lt;-&gt; SLAVE sync: Finished with success</div></pre></td></tr></table></figure></p>
+<p>2.slave与master连接断开<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">36207:S 23 Nov 21:42:24.152 # Connection with master lost.</div><div class="line">36207:S 23 Nov 21:42:24.177 * Caching the disconnected master state.</div></pre></td></tr></table></figure></p>
+<p>3.slave与master重连，重新开始全量复制。(因为复制偏移量不够，无法达到部分复制)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">36207:S 23 Nov 21:42:24.921 * Connecting to MASTER 10.10.xx.200:6390</div><div class="line">36207:S 23 Nov 21:42:24.921 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">36207:S 23 Nov 21:42:24.921 * Non blocking connect for SYNC fired the event.</div><div class="line">36207:S 23 Nov 21:42:24.921 * Master replied to PING, replication can continue...</div><div class="line">36207:S 23 Nov 21:42:24.922 * (Non critical) Master does not understand REPLCONF capa: -ERR Unrecognized REPLCONF option: capa</div><div class="line">36207:S 23 Nov 21:42:24.922 * Trying a partial resynchronization (request e3e319f97545661d820bc573c3f9e0436789d912:3851662).</div><div class="line">36207:S 23 Nov 21:42:24.922 * Full resync from master: e3e319f97545661d820bc573c3f9e0436789d912:226383867</div><div class="line">36207:S 23 Nov 21:42:24.922 * Discarding previously cached master state.</div><div class="line">36207:S 23 Nov 21:43:01.148 * MASTER &lt;-&gt; SLAVE sync: receiving 2206702643 bytes from master</div><div class="line">36207:S 23 Nov 21:44:20.419 * MASTER &lt;-&gt; SLAVE sync: Flushing old data</div><div class="line">36207:S 23 Nov 21:44:39.331 * MASTER &lt;-&gt; SLAVE sync: Loading DB in memory</div></pre></td></tr></table></figure></p>
+<p>危害： 很明显这样会进入无限次全量复制的模式，本身分片比较大，对机器资源有一定开销，会对该机器上其他实例造成影响。<br><img src="http://i0.itc.cn/20161124/3084_6a4131ac_5d59_5895_1b8e_ce2a546dbeaa_1.jpg" alt=""></p>
+<h3 id="二、分析"><a href="#二、分析" class="headerlink" title="二、分析"></a>二、分析</h3><h4 id="1-网络原因导致重连："><a href="#1-网络原因导致重连：" class="headerlink" title="1.网络原因导致重连："></a>1.网络原因导致重连：</h4><p>(1) 添加的slave为同一个网段，使用redis-cli latency未测试出异常<br>(2) 添加另一个slave节点，发现依然出现上述情况。</p>
+<h4 id="2-Redis版本造成。"><a href="#2-Redis版本造成。" class="headerlink" title="2.Redis版本造成。"></a>2.Redis版本造成。</h4><p>在日志中发现了如下一句话：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">36207:S 23 Nov 21:42:24.922 * (Non critical) Master does not understand REPLCONF capa: -ERR Unrecognized REPLCONF option: capa</div></pre></td></tr></table></figure></p>
+<p>初步怀疑是Redis版本造成，master:3.0.2，slave:3.0.5，于是模拟实验一下，发现主从复制正常，而且从(not critical)可以看到应该问题不在这里。</p>
+<h4 id="3-连接确实由于某些原因断开。"><a href="#3-连接确实由于某些原因断开。" class="headerlink" title="3.连接确实由于某些原因断开。"></a>3.连接确实由于某些原因断开。</h4><p>到现在还有看主节点的日志，如下：</p>
+<p>(1) master节点接收到了slave节点的复制请求，并生成RDB传给slave节点。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">2030:M 23 Nov 21:39:43.125 * Slave 10.10.xx.138:6392 asks for synchronization</div><div class="line">2030:M 23 Nov 21:39:43.134 * Full resync requested by slave 10.10.xx.138:6392</div><div class="line">2030:M 23 Nov 21:39:43.134 * Starting BGSAVE for SYNC with target: disk</div><div class="line">2030:M 23 Nov 21:39:43.327 * Background saving started by pid 46221</div><div class="line">2030:M 23 Nov 21:39:43.337 # CONFIG REWRITE executed with success.</div><div class="line">46221:C 23 Nov 21:40:27.992 * DB saved on disk</div><div class="line">46221:C 23 Nov 21:40:28.097 * RDB: 451 MB of memory used by copy-on-write</div><div class="line">2030:M 23 Nov 21:40:28.305 * Background saving terminated with success</div><div class="line">2030:M 23 Nov 21:41:12.736 * Synchronization with slave 10.10.xx.138:6392 succeeded</div></pre></td></tr></table></figure></p>
+<p>(2) slave节点的客户端连接被杀掉，由于超过了client-output-buffer-limit slave，cachecloud的使用的是512mb 128mb 60。由于分片比较大全量复制时间较长，且master写入量较大，所以slave节点的客户端被干掉了(omem=266324615)。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">2030:M 23 Nov 21:41:42.027 # Client id=28191723 addr=10.10.xx.138:38638 fd=735 name= age=119 idle=1 flags=S db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=10514 omem=266324615 events=rw cmd=psync scheduled to be closed ASAP for overcoming of output buffer limits.</div><div class="line">2030:M 23 Nov 21:41:42.028 # Connection with slave 10.10.xx.138:6392 lost.</div><div class="line">2030:M 23 Nov 21:42:24.950 * Slave 10.10.xx.138:6392 asks for synchronization</div><div class="line">2030:M 23 Nov 21:42:24.950 * Unable to partial resync with slave 10.10.xx.138:6392 for lack of backlog (Slave request was: 3851662).</div><div class="line">2030:M 23 Nov 21:42:24.950 * Starting BGSAVE for SYNC with target: disk</div><div class="line">2030:M 23 Nov 21:42:25.158 * Background saving started by pid 47033</div><div class="line">47033:C 23 Nov 21:42:59.788 * DB saved on disk</div><div class="line">.....</div></pre></td></tr></table></figure></p>
+<p>实际上已经收到报警了：提示client_longest_output_list过大。<br><img src="http://i1.itc.cn/20161124/3084_88a14c78_bf0c_a04a_4d95_4dca7f59d0fb_1.png" alt=""></p>
+<p>综上分析可以确定原因了。</p>
+<h3 id="三、后期优化"><a href="#三、后期优化" class="headerlink" title="三、后期优化"></a>三、后期优化</h3><p>1.对于写入量大，且分片较大的情况，可以适当增大client-output-buffer-limit slave<br>2.减少大分片的使用，尽量每个节点控制在4GB以内。<br>3.可以对一些关键日志进行监控，帮助快速定位问题。</p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/17/Redis客户端常见异常分析/" rel="next" title="Redis客户端常见异常分析">
+                <i class="fa fa-chevron-left"></i> Redis客户端常见异常分析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/06/1.3.机器监控功能/" rel="prev" title="CacheCloud 1.3-机器监控功能">
+                CacheCloud 1.3-机器监控功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/11/24/全量复制问题/"
+           data-title="Redis无限全量复制问题分析与优化" data-url="http://yoursite.com/2016/11/24/全量复制问题/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#本文部分内容来自《Redis开发与运维》一书，转载请声明。"><span class="nav-number">1.</span> <span class="nav-text">本文部分内容来自《Redis开发与运维》一书，转载请声明。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一、现象和危害"><span class="nav-number">2.</span> <span class="nav-text">一、现象和危害</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、分析"><span class="nav-number">3.</span> <span class="nav-text">二、分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-网络原因导致重连："><span class="nav-number">3.1.</span> <span class="nav-text">1.网络原因导致重连：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Redis版本造成。"><span class="nav-number">3.2.</span> <span class="nav-text">2.Redis版本造成。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-连接确实由于某些原因断开。"><span class="nav-number">3.3.</span> <span class="nav-text">3.连接确实由于某些原因断开。</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、后期优化"><span class="nav-number">4.</span> <span class="nav-text">三、后期优化</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

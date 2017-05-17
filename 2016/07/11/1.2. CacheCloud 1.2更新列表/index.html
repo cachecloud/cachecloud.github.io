@@ -1,0 +1,963 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文用几星代表更新内容的重要性，星数越多，功能越重要。升级1.2方法请参考：CacheCloud 1.1升级到1.2[fix]  1、修复导入的应用，不能立即使用应用慢查询功能（2星） 2、修复Redis Sentinel节点包含添加slave功能（2星） 3、修复非Redis Cluster水平扩容功能（2星） 4、修复系统配置的值不能为空（3星） 5、修复系统配置修改对cachecloud多机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CacheCloud 1.2更新列表">
+<meta property="og:url" content="http://yoursite.com/2016/07/11/1.2. CacheCloud 1.2更新列表/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="本文用几星代表更新内容的重要性，星数越多，功能越重要。升级1.2方法请参考：CacheCloud 1.1升级到1.2[fix]  1、修复导入的应用，不能立即使用应用慢查询功能（2星） 2、修复Redis Sentinel节点包含添加slave功能（2星） 3、修复非Redis Cluster水平扩容功能（2星） 4、修复系统配置的值不能为空（3星） 5、修复系统配置修改对cachecloud多机">
+<meta property="og:image" content="http://i2.itc.cn/20160711/3084_7ff0c8bc_8b42_6e02_59ab_9e7b316bc27c_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160714/3084_84029602_4e20_bc15_8603_355aaa6c5513_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160612/3084_dfafb401_b822_c5fe_499f_8427717c42b8_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160612/3084_0eee35aa_75d1_7f5a_6317_a74964124038_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160612/3084_67a6e2b0_76ef_68fe_a153_6ff59d4d2d78_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160612/3084_0a9b5f8f_fb4d_6d51_fb40_f383e1efdb1e_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160714/3084_81794ee1_9e97_eb15_5523_734060012deb_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160714/3084_06e5297c_33e0_b381_a0ad_5ffdac8951a9_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160714/3084_f4b75edc_a097_63a3_e9da_d87a9082b1ce_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160713/3084_a51db361_2a07_3349_b3fb_c27642be847a_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160713/3084_5972ddce_0ca5_936a_ecf6_2d88e2bde870_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160713/3084_9c6b013c_1470_a84e_fc8e_8d0db072d4c8_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160713/3084_f26a00b7_a4d0_e583_0728_2f0239e3ab52_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160713/3084_37cab2a5_23d2_5d19_b8f3_78e0d479583f_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160713/3084_c07731ad_705c_3db0_da65_9dd26a8eed43_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160713/3084_e0a82eda_e2ab_1a08_bec0_df977548e49b_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160713/3084_0f8bdabf_1e72_b984_f2db_0b63058c1000_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160713/3084_d420d162_68d0_fe9d_5c1a_242af7fdc1d3_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160713/3084_7a9245a4_c1a1_d6ec_a7cd_9c7f269d3fc6_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160713/3084_4ebf3bf5_6146_4576_33fe_9aed5833b104_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160711/3084_f3a5c8a2_3fee_45ac_e9de_297dda1b9ee1_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160711/3084_887aaf28_5a88_c835_cbb9_96c0c8e6d597_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160711/3084_5b3e7e17_ce99_f377_ad1d_e30d3ae51845_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160711/3084_6d927a21_26fd_5f14_ee1e_485547bf8a18_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160711/3084_13307aed_8134_6c35_08e6_6721c8efe844_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160711/3084_3b1ca4d7_ab30_aa7b_cea0_270c5b26b013_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160713/3084_0374707f_ed77_0258_030c_a80848961d27_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160713/3084_28c37acb_344c_2a53_fc72_6ba2659670a7_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160802/3084_05e9fdc1_2e15_ee60_55e5_03e39e2676d5_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160802/3084_64ef4b32_9c12_aabd_eb07_9c35a99fd40c_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160802/3084_67200a79_df62_bdae_ec46_9783f8e16927_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160830/3084_0461af94_cfc1_f55c_0ac9_59f21597b2b0_1.jpg">
+<meta property="og:image" content="http://i2.itc.cn/20160830/3084_c4eaf9d5_73c0_ce87_4b81_3d362844b5d1_1.jpg">
+<meta property="og:image" content="http://i3.itc.cn/20160830/3084_808aa16d_e1a5_981d_accb_48009f1fff13_1.jpg">
+<meta property="og:updated_time" content="2016-11-03T15:15:37.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CacheCloud 1.2更新列表">
+<meta name="twitter:description" content="本文用几星代表更新内容的重要性，星数越多，功能越重要。升级1.2方法请参考：CacheCloud 1.1升级到1.2[fix]  1、修复导入的应用，不能立即使用应用慢查询功能（2星） 2、修复Redis Sentinel节点包含添加slave功能（2星） 3、修复非Redis Cluster水平扩容功能（2星） 4、修复系统配置的值不能为空（3星） 5、修复系统配置修改对cachecloud多机">
+<meta name="twitter:image" content="http://i2.itc.cn/20160711/3084_7ff0c8bc_8b42_6e02_59ab_9e7b316bc27c_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> CacheCloud 1.2更新列表 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                CacheCloud 1.2更新列表
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-11T11:20:00+08:00" content="2016-07-11">
+              2016-07-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/11/1.2. CacheCloud 1.2更新列表/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/11/1.2. CacheCloud 1.2更新列表/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/07/11/1.2. CacheCloud 1.2更新列表/" class="leancloud_visitors" data-flag-title="CacheCloud 1.2更新列表">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="本文用几星代表更新内容的重要性，星数越多，功能越重要。"><a href="#本文用几星代表更新内容的重要性，星数越多，功能越重要。" class="headerlink" title="本文用几星代表更新内容的重要性，星数越多，功能越重要。"></a><strong>本文用<code>几星</code>代表更新内容的重要性，星数越多，功能越重要。</strong></h3><h3 id="升级1-2方法请参考：CacheCloud-1-1升级到1-2"><a href="#升级1-2方法请参考：CacheCloud-1-1升级到1-2" class="headerlink" title="升级1.2方法请参考：CacheCloud 1.1升级到1.2"></a>升级1.2方法请参考：<a href="http://cachecloud.github.io/2016/07/13/1.1%E5%8D%87%E7%BA%A7%E5%88%B01.2%E6%96%B9%E6%B3%95/" target="_blank" rel="external">CacheCloud 1.1升级到1.2</a></h3><p><strong>[fix]</strong></p>
+<ul>
+<li><a href="#cc1-1">1、修复导入的应用，不能立即使用应用慢查询功能</a>（2星）</li>
+<li><a href="#cc1-2">2、修复Redis Sentinel节点包含添加slave功能</a>（2星）</li>
+<li><a href="#cc1-3">3、修复非Redis Cluster水平扩容功能</a>（2星）</li>
+<li><a href="#cc1-4">4、修复系统配置的值不能为空</a>（3星）</li>
+<li><a href="#cc1-5">5、修复系统配置修改对cachecloud多机器部署无效</a>（3星）</li>
+</ul>
+<p><strong>[new]</strong></p>
+<ul>
+<li><a href="#cc2-1">1、数据迁移工具</a>（5星）</li>
+<li><a href="#cc2-2">2、Redis配置模板</a>（5星）</li>
+<li><a href="#cc2-3">3、Session和Cookie两种用户状态</a>（3星）</li>
+<li><a href="#cc2-4">4、支持修改单个节点的配置</a>（4星）</li>
+<li><a href="#cc2-5">5、应用客户端连接数报警</a>（3星）</li>
+<li><a href="#cc2-6">6、机器可以设置根路径</a>（4星）</li>
+<li><a href="#cc2-7">7、邮件和短信报警支持http接口</a>（4星）</li>
+<li><a href="#cc2-8">8、支持LDAP登录</a>（4星）</li>
+<li><a href="#cc2-9">9、添加Redis碎片率收集和展示</a>（4星）</li>
+<li><a href="#cc2-10">10、添加AOF阻塞收集和展示</a>（4星）</li>
+<li><a href="#cc2-11">11、部署应用前检查配置是否正确</a>（5星）</li>
+<li><a href="#cc2-12">12、删除机器验证</a>（3星）</li>
+<li><a href="#cc2-13">13、增加appkey和RestApi</a>（4星）</li>
+<li><a href="#cc2-14">14、定时删除数据的问题</a>（3星）</li>
+<li><a href="#cc2-15">15、客户端连接数图表</a> (3星)</li>
+<li><a href="#cc2-16">16、应用机器实例拓扑结构</a> (4星)</li>
+<li><a href="#cc2-17">17、Cachecloud日报功能</a> (4星)</li>
+<li><a href="#cc2-18">18、CacheCloud版本提示</a> (3星)</li>
+<li><a href="#cc2-19">19、quartz相关优化</a> (4星)</li>
+</ul>
+<a id="more"></a>
+<h3 id="fix"><a href="#fix" class="headerlink" title="[fix]:"></a>[fix]:</h3><p><a name="cc1-1"></a></p>
+<h4 id="1-修复导入的应用，不能立即使用应用慢查询功能"><a href="#1-修复导入的应用，不能立即使用应用慢查询功能" class="headerlink" title="1. 修复导入的应用，不能立即使用应用慢查询功能"></a>1. 修复导入的应用，不能立即使用应用慢查询功能</h4><p>描述：1.2版本之前，如果是导入的应用，必须重启cachecloud才可以使用应用慢查询功能，1.2版本对这个问题进行了修复。</p>
+<p>导入的应用是指<a href="http://cachecloud.github.io/2016/04/17/%E5%B7%B2%E5%AD%98%E5%9C%A8Redis%E6%8E%A5%E5%85%A5CacheCloud/" target="_blank" rel="external">已存在Redis接入CacheCloud</a></p>
+<p><img src="http://i2.itc.cn/20160711/3084_7ff0c8bc_8b42_6e02_59ab_9e7b316bc27c_1.png" alt=""></p>
+<p><a name="cc1-2"></a></p>
+<h4 id="2-修复Redis-Sentinel节点包含添加slave功能"><a href="#2-修复Redis-Sentinel节点包含添加slave功能" class="headerlink" title="2.修复Redis Sentinel节点包含添加slave功能"></a>2.修复Redis Sentinel节点包含添加slave功能</h4><p>描述: 1.2版本之前，应用运维界面(Redis Sentinel类型)，Sentinel节点有添加slave按钮，实际是无用的。1.2版本对这个问题进行了修复。</p>
+<p><a name="cc1-3"></a></p>
+<h4 id="3-修复非Redis-Cluster水平扩容功能"><a href="#3-修复非Redis-Cluster水平扩容功能" class="headerlink" title="3.修复非Redis Cluster水平扩容功能"></a>3.修复非Redis Cluster水平扩容功能</h4><p>描述: 1.2版本之前，Redis Sentinel和Standalone类型应用在扩容时有水平扩容按钮，实际是无用的。1.2版本对这个问题进行了修复。</p>
+<p><a name="cc1-4"></a></p>
+<h4 id="4-修复系统配置的值不能为空"><a href="#4-修复系统配置的值不能为空" class="headerlink" title="4. 修复系统配置的值不能为空"></a>4. 修复系统配置的值不能为空</h4><p>描述: 1.2版本之前, 系统配置的值不能为空。1.2版本对这个问题进行了修复。</p>
+<p><a name="cc1-5"></a></p>
+<h4 id="5-修复系统配置修改对cachecloud多机器部署无效"><a href="#5-修复系统配置修改对cachecloud多机器部署无效" class="headerlink" title="5. 修复系统配置修改对cachecloud多机器部署无效"></a>5. 修复系统配置修改对cachecloud多机器部署无效</h4><p>描述：系统配置修改后只对当前执行的机器有效，如果是多机部署cachecloud其他机器接收不到。1.2版本对这个问题进行了修复。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ps:为了减少技术栈，没有使用zookeeper，mq等形式，而是采用cachecloud每隔30秒更新一次配置的形式，所以实际使用中，多机部署可能配置生效有30秒的延时。</div></pre></td></tr></table></figure></p>
+<h3 id="new"><a href="#new" class="headerlink" title="[new]:"></a>[new]:</h3><p><a name="cc2-1"></a></p>
+<h4 id="1-迁移数据工具："><a href="#1-迁移数据工具：" class="headerlink" title="1.迁移数据工具："></a>1.迁移数据工具：</h4><p>1.2版本，提供了数据迁移工具，可以完成如下功能。<br><img src="http://i0.itc.cn/20160714/3084_84029602_4e20_bc15_8603_355aaa6c5513_1.png" alt=""></p>
+<ul>
+<li>可以在rdb、Redis Standalone、Redis Sentinel、Redis Cluster、rdb、aof(目前只支持作为source)之间进行数据迁移(也可以直接是CacheCloud的应用，也就是appId)</li>
+<li>数据迁移可以尽可能保证一致性</li>
+<li>迁移过程可视化完成流程的控制</li>
+</ul>
+<p><strong>感谢唯品会开源的<a href="https://github.com/vipshop/redis-migrate-tool" target="_blank" rel="external">redis-migrate-tool</a>,cachecloud就是基于这个工具实现的。</strong></p>
+<p>下面是示例：<br>迁移工具页面：<br><img src="http://i0.itc.cn/20160612/3084_dfafb401_b822_c5fe_499f_8427717c42b8_1.png" alt=""></p>
+<p>迁移列表：<br><img src="http://i1.itc.cn/20160612/3084_0eee35aa_75d1_7f5a_6317_a74964124038_1.png" alt=""></p>
+<p>迁移状态日志<br><img src="http://i1.itc.cn/20160612/3084_67a6e2b0_76ef_68fe_a153_6ff59d4d2d78_1.png" alt=""></p>
+<p>迁移状态查询<br><img src="http://i3.itc.cn/20160612/3084_0a9b5f8f_fb4d_6d51_fb40_f383e1efdb1e_1.png" alt=""></p>
+<hr>
+<p><strong><a href="http://cachecloud.github.io/2016/06/28/1.2.%20%E8%BF%81%E7%A7%BB%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E/" target="_blank" rel="external">详细的使用说明,在这里</a></strong></p>
+<hr>
+<p><a name="cc2-2"></a></p>
+<h4 id="2-Redis使用模板进行配置："><a href="#2-Redis使用模板进行配置：" class="headerlink" title="2. Redis使用模板进行配置："></a>2. Redis使用模板进行配置：</h4><p>1.2版本之前，CacheCloud使用的Redis的配置是硬编码在代码中的，可以参考<a href="http://cachecloud.github.io/2016/06/09/Cachecloud%E4%B8%ADRedis%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/" target="_blank" rel="external">Cachecloud中Redis的相关配置</a>，具体是这三个类:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">RedisConfigEnum</div><div class="line">RedisClusterConfigEnum</div><div class="line">RedisSentinelConfigEnum</div></pre></td></tr></table></figure></p>
+<p>虽然配置上我们做了一些优化，但是每个公司对于Redis的配置可能不尽相同，但是改源码对于许多对于java不太熟悉的朋友来说是比较麻烦的，于是考虑到两个点，1.2版本我们做了一个配置模板的功能，可以实现对配置的增删改查：</p>
+<p>总览：<br><img src="http://i3.itc.cn/20160714/3084_81794ee1_9e97_eb15_5523_734060012deb_1.png" alt=""></p>
+<p>添加配置：<br><img src="http://i0.itc.cn/20160714/3084_06e5297c_33e0_b381_a0ad_5ffdac8951a9_1.png" alt=""></p>
+<p>配置预览：<br><img src="http://i1.itc.cn/20160714/3084_f4b75edc_a097_63a3_e9da_d87a9082b1ce_1.png" alt=""></p>
+<hr>
+<p><strong><a href="http://cachecloud.github.io/2016/07/13/1.2.%20Redis%E9%85%8D%E7%BD%AE%E6%A8%A1%E6%9D%BF%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" target="_blank" rel="external">详细的使用说明,在这里</a></strong></p>
+<hr>
+<p><a name="cc2-3"></a></p>
+<h4 id="3-用户可以选择cookie和session两种形式保存用户状态"><a href="#3-用户可以选择cookie和session两种形式保存用户状态" class="headerlink" title="3. 用户可以选择cookie和session两种形式保存用户状态"></a>3. 用户可以选择cookie和session两种形式保存用户状态</h4><p>1.2版本之前，默认使用session保护用户的状态。但是如果cachecloud使用了多机部署，那么session状态可能会在几台机器来回漂移，这种形式很不友好，有关session共享的问题，有很多的解决方法，比如集中管理session，但是最简单的方法就是用cookie，为此1.2版本提供了cookie的功能，设置方法也很简单，在系统配置中进行修改。(默认值是session)</p>
+<p>session共享问题:<br><img src="http://i3.itc.cn/20160713/3084_a51db361_2a07_3349_b3fb_c27642be847a_1.png" alt=""></p>
+<p>如果想使用session:<br><img src="http://i2.itc.cn/20160713/3084_5972ddce_0ca5_936a_ecf6_2d88e2bde870_1.png" alt=""></p>
+<p>如果想使用cookie:<br><img src="http://i0.itc.cn/20160713/3084_9c6b013c_1470_a84e_fc8e_8d0db072d4c8_1.png" alt=""><br>使用cookie需要有自己的域名，无论测试环境还是生产环境都需要用域名进行访问（例如本地测试需要绑定域名host）。</p>
+<p><code>注意</code>：该配置必须重启cachecloud才可以生效。如果想第一次设置不重启，可以修改数据库。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">session:</div><div class="line">update system_config set config_value=1 where config_key=&apos;cachecloud.user.login.type&apos;;</div><div class="line"></div><div class="line">cookie:</div><div class="line">update system_config set config_value=2 where config_key=&apos;cachecloud.user.login.type&apos;;</div><div class="line">update system_config set config_value=&apos;你的域名&apos; where config_key=&apos;cachecloud.cookie.domain&apos;;</div></pre></td></tr></table></figure></p>
+<p><a name="cc2-4"></a></p>
+<h4 id="4-支持修改单个节点的配置"><a href="#4-支持修改单个节点的配置" class="headerlink" title="4. 支持修改单个节点的配置"></a>4. 支持修改单个节点的配置</h4><p>1.2版本之前，修改配置实际修改了应用下所有的配置，但实际上有时候我们需要对个别实例的配置做一些特殊的”优化”，所以cachecloud在1.2版本开始支持单个实例配置修改。</p>
+<p>修改应用下所有的实例的某个配置：<br><img src="http://i3.itc.cn/20160713/3084_f26a00b7_a4d0_e583_0728_2f0239e3ab52_1.png" alt=""></p>
+<p>修改单个实例的配置：（但是依然建议配置统一化，至少主从要一致化）<br><img src="http://i1.itc.cn/20160713/3084_37cab2a5_23d2_5d19_b8f3_78e0d479583f_1.png" alt=""><br><img src="http://i3.itc.cn/20160713/3084_c07731ad_705c_3db0_da65_9dd26a8eed43_1.png" alt=""></p>
+<p><a name="cc2-5"></a></p>
+<h4 id="5-机器可以设置根路径：现在必须是opt目录"><a href="#5-机器可以设置根路径：现在必须是opt目录" class="headerlink" title="5. 机器可以设置根路径：现在必须是opt目录"></a>5. 机器可以设置根路径：现在必须是opt目录</h4><p>1.2版本之前，redis必须安装在/opt目录下，鉴于各个公司对软件安装目录的差异，在1.2版本可以设置redis的根目录，但是根目录下的其他目录必须还安装之前的约定，例如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">$&#123;base_dir&#125;代表根目录</div><div class="line">数据目录 $&#123;base_dir&#125;/data</div><div class="line">配置目录 $&#123;base_dir&#125;/conf</div><div class="line">日志目录 $&#123;base_dir&#125;/logs</div><div class="line">redis安装目录 $&#123;base_dir&#125;/redis</div></pre></td></tr></table></figure></p>
+<p>如果改变了根目录，需要修改cachecloud-init.sh脚本，所有/opt都换成你的${base_dir}，具体配置方法，进入系统配置<br><img src="http://i1.itc.cn/20160713/3084_e0a82eda_e2ab_1a08_bec0_df977548e49b_1.png" alt=""></p>
+<p><code>注意1</code>：该配置必须重启cachecloud才可以生效。如果想第一次设置不重启，可以修改数据库。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">update system_config set config_value=&apos;你的等目录，例如/data,/xxx&apos; where config_key=&apos;cachecloud.base.dir&apos;;</div></pre></td></tr></table></figure></p>
+<p><code>注意2</code>：上述配置还是整体配置，没有做到一台机器一种目录，所以这个一定要提前规划化好。</p>
+<p><a name="cc2-6"></a></p>
+<h4 id="6-应用客户端连接数报警"><a href="#6-应用客户端连接数报警" class="headerlink" title="6. 应用客户端连接数报警:"></a>6. 应用客户端连接数报警:</h4><p>1.2版本添加了应用客户端连接数的报警，用户可以通过两个方法进行设置<br>(1). 申请应用<br><img src="http://i1.itc.cn/20160713/3084_0f8bdabf_1e72_b984_f2db_0b63058c1000_1.png" alt=""></p>
+<p>(2). 修改配置<br>应用详情页面，点击应用报警配置<br><img src="http://i0.itc.cn/20160713/3084_d420d162_68d0_fe9d_5c1a_242af7fdc1d3_1.png" alt=""></p>
+<p>当超过预设阀值时候，会收到如下报警(前提是短信和邮件接口已经添加，下一个小节)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">分片(10.10.xx.xx:6414,应用(10305))客户端连接数报警-预设2000-现已达到2511-请及时关注</div></pre></td></tr></table></figure></p>
+<p><a name="cc2-7"></a></p>
+<h4 id="7-邮件和短信报警支持http接口：不限制java语言，后续文档会给出规范"><a href="#7-邮件和短信报警支持http接口：不限制java语言，后续文档会给出规范" class="headerlink" title="7. 邮件和短信报警支持http接口：不限制java语言，后续文档会给出规范"></a>7. 邮件和短信报警支持http接口：不限制java语言，后续文档会给出规范</h4><p>1.2版本之前，邮件和短信报警是需要将自己公司的报警代码逻辑写到cachecloud中的(<a href="https://github.com/sohutv/cachecloud/wiki/3.%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3#cc5" target="_blank" rel="external">详见wiki</a>)，鉴于使用cachecloud的有许多是运维人员，有可能对java不是很熟悉，我们在1.2版本提供了http接口规范，只要按照规范开发http接口，任何语言都可以。</p>
+<h5 id="1-邮件："><a href="#1-邮件：" class="headerlink" title="(1) 邮件："></a>(1) 邮件：</h5><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>是否必须</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>邮件标题</td>
+<td>是</td>
+</tr>
+<tr>
+<td>content</td>
+<td>邮件内容</td>
+<td>是</td>
+</tr>
+<tr>
+<td>receiver</td>
+<td>收件人列表</td>
+<td>是</td>
+</tr>
+<tr>
+<td>cc</td>
+<td>抄送人列表</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<p>例如我们用python语言按照上面的参数开发了一个http接口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">www.xxx.com/emailAlert?title=xx&amp;content=xx&amp;receiver=x&amp;cc=x</div></pre></td></tr></table></figure></p>
+<h5 id="2-短信："><a href="#2-短信：" class="headerlink" title="(2) 短信："></a>(2) 短信：</h5><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>是否必须</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>msg</td>
+<td>短信内容</td>
+<td>是</td>
+</tr>
+<tr>
+<td>phone</td>
+<td>手机号列表</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<p>例如我们用python语言按照上面的参数开发了一个http接口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">www.xxx.com/shortMsgAlert?msg=xx&amp;phone=xx</div></pre></td></tr></table></figure></p>
+<h5 id="3-修改系统配置："><a href="#3-修改系统配置：" class="headerlink" title="(3) 修改系统配置："></a>(3) 修改系统配置：</h5><p>确认无误后，我们需要把它添加到系统配置修改中即可：<br><img src="http://i0.itc.cn/20160713/3084_7a9245a4_c1a1_d6ec_a7cd_9c7f269d3fc6_1.png" alt=""></p>
+<p><a name="cc2-8"></a></p>
+<h4 id="8-支持LDAP登录"><a href="#8-支持LDAP登录" class="headerlink" title="8. 支持LDAP登录"></a>8. 支持LDAP登录</h4><p>1.2版本之前，用户登录密码验证是需要将自己公司的登录代码逻辑写到cachecloud中的(<a href="https://github.com/sohutv/cachecloud/wiki/3.%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3#cc5" target="_blank" rel="external">详见wiki</a>)，鉴于使用cachecloud的有许多是运维人员，有可能对java不是很熟悉，我们在1.2版本提供了LDAP接口，这样只需要将LDAP接口进行配置，就可以实现公司内部的登陆验证了。<br>具体修改方法，在系统配置中，修改LDAP接口:<br><img src="http://i3.itc.cn/20160713/3084_4ebf3bf5_6146_4576_33fe_9aed5833b104_1.png" alt=""></p>
+<p><a name="cc2-9"></a></p>
+<h4 id="9-添加Redis碎片率收集和展示"><a href="#9-添加Redis碎片率收集和展示" class="headerlink" title="9.添加Redis碎片率收集和展示"></a>9.添加Redis碎片率收集和展示</h4><p>Redis的内存碎片率是一个很重要的数据，较高的内存碎片率可能会造成系统内存的浪费，所以有必要定期收集和展示。</p>
+<h5 id="具体显示在两个地方"><a href="#具体显示在两个地方" class="headerlink" title="具体显示在两个地方:"></a>具体显示在两个地方:</h5><p>(1) 应用拓扑界面<br><img src="http://i3.itc.cn/20160711/3084_f3a5c8a2_3fee_45ac_e9de_297dda1b9ee1_1.png" alt=""></p>
+<p>(2) 应用运维界面<br><img src="http://i0.itc.cn/20160711/3084_887aaf28_5a88_c835_cbb9_96c0c8e6d597_1.png" alt=""></p>
+<h5 id="显示规则"><a href="#显示规则" class="headerlink" title="显示规则"></a>显示规则</h5><p>如果Redis内存使用了很少，有可能造成碎片率过高的情况，我们忽视了这种情况，只有在Redis单个节点使用内存超过100M时候，才会重点突出碎片率高的节点，例如：</p>
+<ul>
+<li>碎片率小于3，正常(绿色)</li>
+<li>碎片率在3到5之间，警告(橘黄色)</li>
+<li>碎片率大于5, 危险(红色)</li>
+</ul>
+<p><img src="http://i2.itc.cn/20160711/3084_5b3e7e17_ce99_f377_ad1d_e30d3ae51845_1.png" alt=""></p>
+<p><a name="cc2-10"></a></p>
+<h4 id="10-添加AOF阻塞收集和展示"><a href="#10-添加AOF阻塞收集和展示" class="headerlink" title="10.添加AOF阻塞收集和展示"></a>10.添加AOF阻塞收集和展示</h4><p>如果Redis开启了AOF，那么AOF运行是否正常直接决定着Redis服务是否正常，这里只是抛砖引玉，我们已经计划在1.3版本加入AOF和RDB控制中心的功能。<br><img src="http://i1.itc.cn/20160711/3084_6d927a21_26fd_5f14_ee1e_485547bf8a18_1.png" alt=""></p>
+<p><a name="cc2-11"></a></p>
+<h4 id="11-部署应用前检查配置是否正确"><a href="#11-部署应用前检查配置是否正确" class="headerlink" title="11.部署应用前检查配置是否正确"></a>11.部署应用前检查配置是否正确</h4><p>为了防止人为输入出错，在应用部署时添加了校验机制，形如下图，必须在格式检查成功后才可以部署应用。<br><img src="http://i3.itc.cn/20160711/3084_13307aed_8134_6c35_08e6_6721c8efe844_1.png" alt=""></p>
+<h5 id="检测规则"><a href="#检测规则" class="headerlink" title="检测规则"></a>检测规则</h5><ul>
+<li>输入框下面的规则.</li>
+<li>检查机器是否在机器列表中.</li>
+<li>如果是Redis Sentinel应用必须有3个以上的Sentinel节点(强制)</li>
+</ul>
+<p><a name="cc2-12"></a></p>
+<h4 id="12-删除机器前要验证机器上是否有用cachecloud开启的Redis节点"><a href="#12-删除机器前要验证机器上是否有用cachecloud开启的Redis节点" class="headerlink" title="12. 删除机器前要验证机器上是否有用cachecloud开启的Redis节点"></a>12. 删除机器前要验证机器上是否有用cachecloud开启的Redis节点</h4><p>删除机器前，确认该机器上是否有正在运行的Redis节点(必须是cachecloud开启的或者导入的，自己在机器手工安装的Redis除外)<br><img src="http://i2.itc.cn/20160711/3084_3b1ca4d7_ab30_aa7b_cea0_270c5b26b013_1.png" alt=""></p>
+<p><a name="cc2-13"></a></p>
+<h4 id="13-增加appkey和RestApi"><a href="#13-增加appkey和RestApi" class="headerlink" title="13. 增加appkey和RestApi"></a>13. 增加appkey和RestApi</h4><p>1.2之前的版本，客户端直接可以通过带appId参数的Restful API就可以访问到应用的实例信息。<br>众所周知，appId是递增的，这样使用者存在误操作和恶意操作的可能性(只需要改一下appId)，存在一定的安全隐患，因此需要一个秘钥在cachecloud服务端进行验证，因此新版本中添加appKey秘钥，这个秘钥在应用申请成功后就会自动生成，并且展示到了应用详情页面。</p>
+<p><img src="http://i2.itc.cn/20160713/3084_0374707f_ed77_0258_030c_a80848961d27_1.png" alt=""></p>
+<p>同时添加了新的RestApi(老版本的API依然可以使用)<br>原api,<a href="https://github.com/sohutv/cachecloud/wiki/4.%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%96%87%E6%A1%A3#cc2-1" target="_blank" rel="external">详情</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">http://ip:port/cache/client/redis/$&#123;appType&#125;/&#123;appId&#125;.json?clientVersion=xx</div><div class="line"></div><div class="line">appType=cluster|sentinel|standalone</div></pre></td></tr></table></figure></p>
+<p>新api，添加了appkey参数(必须的)，路径上简单的添加了/safe路径(为了方便)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">http://ip:port/cache/client/redis/$&#123;appType&#125;/safe/&#123;appId&#125;.json?clientVersion=xxxx&amp;&amp;appKey=xxxx</div><div class="line"></div><div class="line">appType=cluster|sentinel|standalone</div><div class="line">appKey是秘钥</div></pre></td></tr></table></figure></p>
+<p><a name="cc2-14"></a></p>
+<h4 id="14-定时删除数据的问题"><a href="#14-定时删除数据的问题" class="headerlink" title="14. 定时删除数据的问题"></a>14. 定时删除数据的问题</h4><p>cachecloud在搜狐视频现在有接近1000个节点，不算特别大，但是例如每分钟收集各个节点数据以及客户端的数据，日积月累数据量会比较大，而mysql在存储大量数据时候会比较麻烦，所以cachecloud会定期清理各种数据(详见CleanUpStatisticsJob类)，但是可能实际上各个公司的节点数不一样，有些公司可能不需要定期清理数据，因此1.2版本提供了一个开关来决定是否定期清理统计数据，在系统配置进行修改就可以了。<br><img src="http://i3.itc.cn/20160713/3084_28c37acb_344c_2a53_fc72_6ba2659670a7_1.png" alt=""></p>
+<p><a name="cc2-15"></a></p>
+<h4 id="15-客户端连接数图表"><a href="#15-客户端连接数图表" class="headerlink" title="15. 客户端连接数图表"></a>15. 客户端连接数图表</h4><p>应用首页最下方添加客户端连接数图表：<br><img src="http://i2.itc.cn/20160802/3084_05e9fdc1_2e15_ee60_55e5_03e39e2676d5_1.png" alt=""></p>
+<p><a name="cc2-16"></a></p>
+<h4 id="16-应用机器实例拓扑结构"><a href="#16-应用机器实例拓扑结构" class="headerlink" title="16. 应用机器实例拓扑结构"></a>16. 应用机器实例拓扑结构</h4><p>应用页面添加新标签应用拓扑，用于观察应用分配机器是否合理以及机器分配实例数观察等。</p>
+<p><img src="http://i0.itc.cn/20160802/3084_64ef4b32_9c12_aabd_eb07_9c35a99fd40c_1.png" alt=""></p>
+<p><img src="http://i1.itc.cn/20160802/3084_67200a79_df62_bdae_ec46_9783f8e16927_1.png" alt=""></p>
+<p><a name="cc2-17"></a></p>
+<h4 id="17-Cachecloud日报功能"><a href="#17-Cachecloud日报功能" class="headerlink" title="17. Cachecloud日报功能"></a>17. Cachecloud日报功能</h4><p>CacheCloud每天10点会给各个应用的使用者发送一份日报邮件，是关于前一天CacheCloud的一些使用情况，如下图所示:<br><img src="http://i3.itc.cn/20160830/3084_0461af94_cfc1_f55c_0ac9_59f21597b2b0_1.jpg" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">此功能需要第7小节邮件和短信报警支持http接口功能</div></pre></td></tr></table></figure>
+<p><a name="cc2-18"></a></p>
+<h4 id="18-CacheCloud版本提示"><a href="#18-CacheCloud版本提示" class="headerlink" title="18. CacheCloud版本提示"></a>18. CacheCloud版本提示</h4><p>通过点击下拉菜单可以看到当前CacheCloud的版本</p>
+<p><img src="http://i2.itc.cn/20160830/3084_c4eaf9d5_73c0_ce87_4b81_3d362844b5d1_1.jpg" alt=""></p>
+<p><img src="http://i3.itc.cn/20160830/3084_808aa16d_e1a5_981d_accb_48009f1fff13_1.jpg" alt=""></p>
+<p><a name="cc2-19"></a></p>
+<h4 id="19-quartz相关优化"><a href="#19-quartz相关优化" class="headerlink" title="19. quartz相关优化"></a>19. quartz相关优化</h4><p>优化了quartz线程池，防止大量慢任务阻塞掉quartz线程池。</p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/11/1.1升级到1.2方法/" rel="next" title="CacheCloud 1.1升级到1.2的方法">
+                <i class="fa fa-chevron-left"></i> CacheCloud 1.1升级到1.2的方法
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/13/1.2. Redis配置模板使用方法/" rel="prev" title="CacheCloud 1.2-Redis配置模板使用方法">
+                CacheCloud 1.2-Redis配置模板使用方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/07/11/1.2. CacheCloud 1.2更新列表/"
+           data-title="CacheCloud 1.2更新列表" data-url="http://yoursite.com/2016/07/11/1.2. CacheCloud 1.2更新列表/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#本文用几星代表更新内容的重要性，星数越多，功能越重要。"><span class="nav-number">1.</span> <span class="nav-text">本文用几星代表更新内容的重要性，星数越多，功能越重要。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#升级1-2方法请参考：CacheCloud-1-1升级到1-2"><span class="nav-number">2.</span> <span class="nav-text">升级1.2方法请参考：CacheCloud 1.1升级到1.2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fix"><span class="nav-number">3.</span> <span class="nav-text">[fix]:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-修复导入的应用，不能立即使用应用慢查询功能"><span class="nav-number">3.1.</span> <span class="nav-text">1. 修复导入的应用，不能立即使用应用慢查询功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-修复Redis-Sentinel节点包含添加slave功能"><span class="nav-number">3.2.</span> <span class="nav-text">2.修复Redis Sentinel节点包含添加slave功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-修复非Redis-Cluster水平扩容功能"><span class="nav-number">3.3.</span> <span class="nav-text">3.修复非Redis Cluster水平扩容功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-修复系统配置的值不能为空"><span class="nav-number">3.4.</span> <span class="nav-text">4. 修复系统配置的值不能为空</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-修复系统配置修改对cachecloud多机器部署无效"><span class="nav-number">3.5.</span> <span class="nav-text">5. 修复系统配置修改对cachecloud多机器部署无效</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#new"><span class="nav-number">4.</span> <span class="nav-text">[new]:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-迁移数据工具："><span class="nav-number">4.1.</span> <span class="nav-text">1.迁移数据工具：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Redis使用模板进行配置："><span class="nav-number">4.2.</span> <span class="nav-text">2. Redis使用模板进行配置：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-用户可以选择cookie和session两种形式保存用户状态"><span class="nav-number">4.3.</span> <span class="nav-text">3. 用户可以选择cookie和session两种形式保存用户状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-支持修改单个节点的配置"><span class="nav-number">4.4.</span> <span class="nav-text">4. 支持修改单个节点的配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-机器可以设置根路径：现在必须是opt目录"><span class="nav-number">4.5.</span> <span class="nav-text">5. 机器可以设置根路径：现在必须是opt目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-应用客户端连接数报警"><span class="nav-number">4.6.</span> <span class="nav-text">6. 应用客户端连接数报警:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-邮件和短信报警支持http接口：不限制java语言，后续文档会给出规范"><span class="nav-number">4.7.</span> <span class="nav-text">7. 邮件和短信报警支持http接口：不限制java语言，后续文档会给出规范</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-邮件："><span class="nav-number">4.7.1.</span> <span class="nav-text">(1) 邮件：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-短信："><span class="nav-number">4.7.2.</span> <span class="nav-text">(2) 短信：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-修改系统配置："><span class="nav-number">4.7.3.</span> <span class="nav-text">(3) 修改系统配置：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-支持LDAP登录"><span class="nav-number">4.8.</span> <span class="nav-text">8. 支持LDAP登录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-添加Redis碎片率收集和展示"><span class="nav-number">4.9.</span> <span class="nav-text">9.添加Redis碎片率收集和展示</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#具体显示在两个地方"><span class="nav-number">4.9.1.</span> <span class="nav-text">具体显示在两个地方:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#显示规则"><span class="nav-number">4.9.2.</span> <span class="nav-text">显示规则</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-添加AOF阻塞收集和展示"><span class="nav-number">4.10.</span> <span class="nav-text">10.添加AOF阻塞收集和展示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-部署应用前检查配置是否正确"><span class="nav-number">4.11.</span> <span class="nav-text">11.部署应用前检查配置是否正确</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#检测规则"><span class="nav-number">4.11.1.</span> <span class="nav-text">检测规则</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-删除机器前要验证机器上是否有用cachecloud开启的Redis节点"><span class="nav-number">4.12.</span> <span class="nav-text">12. 删除机器前要验证机器上是否有用cachecloud开启的Redis节点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-增加appkey和RestApi"><span class="nav-number">4.13.</span> <span class="nav-text">13. 增加appkey和RestApi</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-定时删除数据的问题"><span class="nav-number">4.14.</span> <span class="nav-text">14. 定时删除数据的问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-客户端连接数图表"><span class="nav-number">4.15.</span> <span class="nav-text">15. 客户端连接数图表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-应用机器实例拓扑结构"><span class="nav-number">4.16.</span> <span class="nav-text">16. 应用机器实例拓扑结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#17-Cachecloud日报功能"><span class="nav-number">4.17.</span> <span class="nav-text">17. Cachecloud日报功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#18-CacheCloud版本提示"><span class="nav-number">4.18.</span> <span class="nav-text">18. CacheCloud版本提示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#19-quartz相关优化"><span class="nav-number">4.19.</span> <span class="nav-text">19. quartz相关优化</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

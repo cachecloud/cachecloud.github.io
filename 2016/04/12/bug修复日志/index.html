@@ -1,0 +1,835 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="2016-03-18：添加机器后不能立刻出现在机器列表中(fixed,详情) 表现：添加机器后不能立刻出现在机器列表中。 原因：最早的版本必须等到quartz收集完机器信息才显示。 解决：添加机器信息后，立即显示在列表中，不过机器信息显示收集中。  2016-03-19：sentinel必须写死在配置中(fixed,详情) 表现：sentinel列表必须写死在配置中。 原因：历史原因造成，cach">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CacheCloud-功能升级和Bug修复日志">
+<meta property="og:url" content="http://yoursite.com/2016/04/12/bug修复日志/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="2016-03-18：添加机器后不能立刻出现在机器列表中(fixed,详情) 表现：添加机器后不能立刻出现在机器列表中。 原因：最早的版本必须等到quartz收集完机器信息才显示。 解决：添加机器信息后，立即显示在列表中，不过机器信息显示收集中。  2016-03-19：sentinel必须写死在配置中(fixed,详情) 表现：sentinel列表必须写死在配置中。 原因：历史原因造成，cach">
+<meta property="og:image" content="http://i3.itc.cn/20160412/3084_96890c2b_97e5_0f8f_db51_7e9c1f8a592c_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160504/3084_292b02d8_b5d4_b056_959b_27b8664e8e26_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160504/3084_5c4a1c3a_a2cb_1106_f855_3aaf189fb777_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160504/3084_292b02d8_b5d4_b056_959b_27b8664e8e26_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160504/3084_c96a8c9f_7e85_96e9_fc5d_df78209d97c2_1.png">
+<meta property="og:updated_time" content="2016-11-04T00:56:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CacheCloud-功能升级和Bug修复日志">
+<meta name="twitter:description" content="2016-03-18：添加机器后不能立刻出现在机器列表中(fixed,详情) 表现：添加机器后不能立刻出现在机器列表中。 原因：最早的版本必须等到quartz收集完机器信息才显示。 解决：添加机器信息后，立即显示在列表中，不过机器信息显示收集中。  2016-03-19：sentinel必须写死在配置中(fixed,详情) 表现：sentinel列表必须写死在配置中。 原因：历史原因造成，cach">
+<meta name="twitter:image" content="http://i3.itc.cn/20160412/3084_96890c2b_97e5_0f8f_db51_7e9c1f8a592c_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> CacheCloud-功能升级和Bug修复日志 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                CacheCloud-功能升级和Bug修复日志
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-04-12T11:20:00+08:00" content="2016-04-12">
+              2016-04-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/bug/" itemprop="url" rel="index">
+                    <span itemprop="name">bug</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/04/12/bug修复日志/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/04/12/bug修复日志/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/04/12/bug修复日志/" class="leancloud_visitors" data-flag-title="CacheCloud-功能升级和Bug修复日志">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="2016-03-18：添加机器后不能立刻出现在机器列表中-fixed-详情"><a href="#2016-03-18：添加机器后不能立刻出现在机器列表中-fixed-详情" class="headerlink" title="2016-03-18：添加机器后不能立刻出现在机器列表中(fixed,详情)"></a>2016-03-18：添加机器后不能立刻出现在机器列表中(fixed,<a href="https://github.com/sohutv/cachecloud/commit/bf6b6f0e4b0ea912aa05badbbd976c999620055f" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>表现：添加机器后不能立刻出现在机器列表中。</li>
+<li>原因：最早的版本必须等到quartz收集完机器信息才显示。</li>
+<li>解决：添加机器信息后，立即显示在列表中，不过机器信息显示收集中。</li>
+</ul>
+<h4 id="2016-03-19：sentinel必须写死在配置中-fixed-详情"><a href="#2016-03-19：sentinel必须写死在配置中-fixed-详情" class="headerlink" title="2016-03-19：sentinel必须写死在配置中(fixed,详情)"></a>2016-03-19：sentinel必须写死在配置中(fixed,<a href="https://github.com/sohutv/cachecloud/commit/e596d4326fac911f4172158de1ae03abb14f9830" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>表现：sentinel列表必须写死在配置中。</li>
+<li>原因：历史原因造成，cachecloud在内部用了固定的三台机器，为了偷懒。</li>
+<li>解决：sentinel可以灵活配置。<br><img src="http://i3.itc.cn/20160412/3084_96890c2b_97e5_0f8f_db51_7e9c1f8a592c_1.png"></li>
+</ul>
+<h4 id="2016-03-21：保存机器收集信息报错-fixed-详情"><a href="#2016-03-21：保存机器收集信息报错-fixed-详情" class="headerlink" title="2016-03-21：保存机器收集信息报错(fixed,详情)"></a>2016-03-21：保存机器收集信息报错(fixed,<a href="https://github.com/sohutv/cachecloud/commit/d6e1ffb1ebd9bd1df9b55535da9fec7000167559" target="_blank" rel="external">详情</a>)</h4><ol>
+<li>表现：保存机器收集信息，提示和virtual相关的报错</li>
+<li>原因：mysql5.7中virtual是关键字</li>
+<li>解决：在mybatis的mapper中兼容</li>
+</ol>
+<a id="more"></a> 
+<h4 id="2016-03-28：修复redis-cluster节点都在一台机器时，机器挂掉后，无法显示运维界面-fixed-详情"><a href="#2016-03-28：修复redis-cluster节点都在一台机器时，机器挂掉后，无法显示运维界面-fixed-详情" class="headerlink" title="2016-03-28：修复redis cluster节点都在一台机器时，机器挂掉后，无法显示运维界面(fixed,详情)"></a>2016-03-28：修复redis cluster节点都在一台机器时，机器挂掉后，无法显示运维界面(fixed,<a href="https://github.com/sohutv/cachecloud/commit/b5f8d7dbc78df4354f995c61b6513a6f6188e809" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>表现：应用运维界面为空白，收到空指针</li>
+<li>原因：所有实例都挂了，无法获取slot信息，造成空指针</li>
+<li>解决：如果出现，暂时先返回空的Map</li>
+</ul>
+<h4 id="2016-03-29：修复机器信息统计在centos7-debian等操作系统失效-fixed-详情"><a href="#2016-03-29：修复机器信息统计在centos7-debian等操作系统失效-fixed-详情" class="headerlink" title="2016-03-29：修复机器信息统计在centos7 debian等操作系统失效(fixed,详情)"></a>2016-03-29：修复机器信息统计在centos7 debian等操作系统失效(fixed,<a href="https://github.com/sohutv/cachecloud/commit/3033ca155bd18e0988b6c4326074c6d2a7f059f2" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>表现：收集机器信息报错，</li>
+<li>原因：centos 各个版本, redhat, ubuntu执行top对应的信息不同，解析方法没有兼容造成。</li>
+<li>解决：使用正则表达式解决。</li>
+</ul>
+<h4 id="2016-03-31：启动脚本问题。-fixed-详情"><a href="#2016-03-31：启动脚本问题。-fixed-详情" class="headerlink" title="2016-03-31：启动脚本问题。(fixed,详情)"></a>2016-03-31：启动脚本问题。(fixed,<a href="https://github.com/sohutv/cachecloud/commit/6ba783a2367aec69d6c1abcd1c65b592a7274cca" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： /etc/init.d/cachecloud-web start 启动失败</li>
+<li>原因： 操作系统不兼容</li>
+<li>解决方法：使用nohup java形式启动，使用kill pid关闭，详见start.sh和stop.sh</li>
+</ul>
+<h4 id="2016-04-03-修复机器更新异常。-fixed-详情"><a href="#2016-04-03-修复机器更新异常。-fixed-详情" class="headerlink" title="2016-04-03: 修复机器更新异常。(fixed,详情)"></a>2016-04-03: 修复机器更新异常。(fixed,<a href="https://github.com/sohutv/cachecloud/commit/ad0d54bbe0a24f3f1eb94b96e34168b0e2d65f61" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题：cachecloud后台机器管理中，修改机器信息提示更新失败。</li>
+<li>原因：代码逻辑问题</li>
+<li>解决方法：添加和更新用一个方法实现。</li>
+</ul>
+<h4 id="2016-04-07-修复应用运维界面，运维后页面不刷新-fixed-详情"><a href="#2016-04-07-修复应用运维界面，运维后页面不刷新-fixed-详情" class="headerlink" title="2016-04-07: 修复应用运维界面，运维后页面不刷新 (fixed,详情)"></a>2016-04-07: 修复应用运维界面，运维后页面不刷新 (fixed,<a href="https://github.com/sohutv/cachecloud/commit/607dc8d254329f71666e6fc34e5c2a0b96cd4dd7" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题：应用运维界面在执行failover, add slave等操作后，页面刷新不太正常</li>
+<li>原因: javascript刷新有问题</li>
+<li>解决方法：js的页面刷新使用错误，虽然比较好解决，但是这个不刷新会对集群节点关系产生错觉（之前一直是手动刷新解决的）</li>
+</ul>
+<h4 id="2016-04-07-去掉InstanceInfo中的parentId-对应instance-info表-fixed-详情"><a href="#2016-04-07-去掉InstanceInfo中的parentId-对应instance-info表-fixed-详情" class="headerlink" title="2016-04-07: 去掉InstanceInfo中的parentId(对应instance_info表)(fixed,详情)"></a>2016-04-07: 去掉InstanceInfo中的parentId(对应instance_info表)(fixed,<a href="https://github.com/sohutv/cachecloud/commit/dccb8b2304977bd462fd637c9f1571f04577804b" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题：parentId起初设计是代表当前节点是否为master(parentId&gt;0代表slave, parentId=0代表master)，但是这个设计是有问题的，因为后期在运维过程中，主从关系关系会发生变化，需要维护parentId这个字段的一致性。</li>
+<li>解决方法：去掉parentId，完全使用实时主从关系。</li>
+</ul>
+<h4 id="2016-04-07-JedisCluster初始化不需要指定主从关系-fixed-详情"><a href="#2016-04-07-JedisCluster初始化不需要指定主从关系-fixed-详情" class="headerlink" title="2016-04-07: JedisCluster初始化不需要指定主从关系(fixed,详情)"></a>2016-04-07: JedisCluster初始化不需要指定主从关系(fixed,<a href="https://github.com/sohutv/cachecloud/commit/4b8c4ecf335dc024637f3b69b5adc2ce4e0828c4" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题：JedisCluster初始化用到的nodeList是不需要指定主从关系的，具体可以参考Jedis中JedisClusterConnectionHandler的initializeSlotsCache方法，它会自动发现集群信息。</li>
+</ul>
+<h4 id="2016-04-16-已存在Redis接入CacheCloud-fixed-详情"><a href="#2016-04-16-已存在Redis接入CacheCloud-fixed-详情" class="headerlink" title="2016-04-16: 已存在Redis接入CacheCloud(fixed,详情)"></a>2016-04-16: 已存在Redis接入CacheCloud(fixed,<a href="https://github.com/sohutv/cachecloud/commit/6c65dd3224f5f7b950e18ecb4a0b3adf3a5feacc" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： cachecloud只能开通新的应用和实例，在接入已经存在的Redis上做的不够好。</li>
+<li>解决： 做成界面，一键导入。<a href="http://cachecloud.github.io/2016/04/17/%E5%B7%B2%E5%AD%98%E5%9C%A8Redis%E6%8E%A5%E5%85%A5CacheCloud/" target="_blank" rel="external">http://cachecloud.github.io/2016/04/17/%E5%B7%B2%E5%AD%98%E5%9C%A8Redis%E6%8E%A5%E5%85%A5CacheCloud/</a></li>
+</ul>
+<h4 id="2016-04-21-admin用户密码可配置-fixed-详情"><a href="#2016-04-21-admin用户密码可配置-fixed-详情" class="headerlink" title="2016-04-21: admin用户密码可配置(fixed,详情)"></a>2016-04-21: admin用户密码可配置(fixed,<a href="https://github.com/sohutv/cachecloud/commit/f202e339cb2082fa96ffa303d0e95a3262b5be6e" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： admin的密码写在代码常量中，不太方便修改</li>
+<li>解决： 改到local.properties和online.properties进行配置。</li>
+</ul>
+<h4 id="2016-04-21-获取机器最大的redis端口时，存在debian操作系统不兼容问题-fixed-详情"><a href="#2016-04-21-获取机器最大的redis端口时，存在debian操作系统不兼容问题-fixed-详情" class="headerlink" title="2016-04-21: 获取机器最大的redis端口时，存在debian操作系统不兼容问题(fixed,详情)"></a>2016-04-21: 获取机器最大的redis端口时，存在debian操作系统不兼容问题(fixed,<a href="https://github.com/sohutv/cachecloud/commit/40327c3958a8a5a0c271d7e7da9328662920b500/" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 获取机器最大的redis端口时，存在debian操作系统不兼容，报错。</li>
+<li>解决： 去掉繁复的shell，直接用简单shell+java进行解析。</li>
+</ul>
+<h4 id="2016-04-24-修复删除机器不能删除机器相关的定时任务-fixed-详情"><a href="#2016-04-24-修复删除机器不能删除机器相关的定时任务-fixed-详情" class="headerlink" title="2016-04-24: 修复删除机器不能删除机器相关的定时任务(fixed,详情)"></a>2016-04-24: 修复删除机器不能删除机器相关的定时任务(fixed,<a href="https://github.com/sohutv/cachecloud/commit/5c82745a1c0c1899d270e7772bae4546ab707e0a" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 删除机器信息功能，没有关闭掉机器相关的定时任务。</li>
+<li>解决： 代码问题，调换了删除机器信息和定时任务的顺序。</li>
+</ul>
+<h4 id="2016-05-04-应用驳回后无法显示驳回状态-fixed-详情"><a href="#2016-05-04-应用驳回后无法显示驳回状态-fixed-详情" class="headerlink" title="2016-05-04: 应用驳回后无法显示驳回状态(fixed,详情)"></a>2016-05-04: 应用驳回后无法显示驳回状态(fixed,<a href="https://github.com/sohutv/cachecloud/commit/27561e40e2d98880adb7466505f1d47f902220e8" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 应用驳回后无法显示驳回状态</li>
+<li>解决： 添加驳回状态，修改相应页面。</li>
+<li>issue: <a href="https://github.com/sohutv/cachecloud/issues/39" target="_blank" rel="external">https://github.com/sohutv/cachecloud/issues/39</a></li>
+</ul>
+<h4 id="2016-05-04-优化审批流程-fixed-详情"><a href="#2016-05-04-优化审批流程-fixed-详情" class="headerlink" title="2016-05-04: 优化审批流程(fixed,详情)"></a>2016-05-04: 优化审批流程(fixed,<a href="https://github.com/sohutv/cachecloud/commit/89c30cc503bb1f57bfa8fd7ba4e6f24006348033" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 审批流程稍复杂</li>
+<li>解决：<br>(1) 申请后，列表中只有驳回和审批处理，不再有通过按钮。<br><img src="http://i1.itc.cn/20160504/3084_292b02d8_b5d4_b056_959b_27b8664e8e26_1.png" alt="http://i1.itc.cn/20160504/3084_292b02d8_b5d4_b056_959b_27b8664e8e26_1.png"></li>
+</ul>
+<p>(2.1) 审批处理成功了，只有通过按钮<br><img src="http://i1.itc.cn/20160504/3084_5c4a1c3a_a2cb_1106_f855_3aaf189fb777_1.png" alt="http://i1.itc.cn/20160504/3084_5c4a1c3a_a2cb_1106_f855_3aaf189fb777_1.png"></p>
+<p>(2.2) 审批处理失败了，仍然回到(1)<br><img src="http://i1.itc.cn/20160504/3084_292b02d8_b5d4_b056_959b_27b8664e8e26_1.png" alt="http://i1.itc.cn/20160504/3084_292b02d8_b5d4_b056_959b_27b8664e8e26_1.png"></p>
+<h4 id="2016-05-04-配置修改迁移到应用界面-fixed-详情"><a href="#2016-05-04-配置修改迁移到应用界面-fixed-详情" class="headerlink" title="2016-05-04: 配置修改迁移到应用界面(fixed,详情)"></a>2016-05-04: 配置修改迁移到应用界面(fixed,<a href="https://github.com/sohutv/cachecloud/commit/77a0ce42e719f58552dbc5cb49d11d3c13b1f3f2" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 之前隐藏在实例中</li>
+<li>解决：<br><img src="http://i1.itc.cn/20160504/3084_c96a8c9f_7e85_96e9_fc5d_df78209d97c2_1.png" alt="http://i1.itc.cn/20160504/3084_c96a8c9f_7e85_96e9_fc5d_df78209d97c2_1.png"></li>
+</ul>
+<pre><code>配置修改申请成功后，会修改应用下所有节点的配置，例如修改appendonly=yes，那么所有节点的appendonly都变为yes
+</code></pre><h4 id="2016-05-06-服务器ssh端口暴露在配置文件中-fixed-详情"><a href="#2016-05-06-服务器ssh端口暴露在配置文件中-fixed-详情" class="headerlink" title="2016-05-06: 服务器ssh端口暴露在配置文件中(fixed,详情)"></a>2016-05-06: 服务器ssh端口暴露在配置文件中(fixed,<a href="https://github.com/sohutv/cachecloud/commit/cc44393d4ee6d4263b4bb9a35a8809c778f2e35d" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 服务器ssh端口在代码里，对很多运维人员不是很友好。</li>
+<li>解决： 添加到配置文件，默认值是22。(测试local.properties，线上online.properties)<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cachecloud.machine.ssh.port = 22</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="2016-05-09-优化客户端上报数据存储-fixed-详情"><a href="#2016-05-09-优化客户端上报数据存储-fixed-详情" class="headerlink" title="2016-05-09: 优化客户端上报数据存储(fixed,详情)"></a>2016-05-09: 优化客户端上报数据存储(fixed,<a href="https://github.com/sohutv/cachecloud/commit/097d0f64f30b792c2fcaf413002ffd33c70b5680" target="_blank" rel="external">详情</a>)</h4><pre><code>目前开源版本中还没有给出完整的客户端上报代码，此更新是为了保持与cachecloud内部版保持一致。
+</code></pre><h4 id="2016-05-12-排除配置修改、网络流量展示、客户端实例列表中的下线应用-fixed-详情"><a href="#2016-05-12-排除配置修改、网络流量展示、客户端实例列表中的下线应用-fixed-详情" class="headerlink" title="2016-05-12: 排除配置修改、网络流量展示、客户端实例列表中的下线应用(fixed,详情)"></a>2016-05-12: 排除配置修改、网络流量展示、客户端实例列表中的下线应用(fixed,<a href="https://github.com/sohutv/cachecloud/commit/6a1363077cba9d2a4e0f2d3b1953271b0f94929b" target="_blank" rel="external">详情</a>)</h4><ul>
+<li>问题： 配置修改、网络流量展示、客户端实例列表中包含了下线应用，如果应用实例比较多，会造成展示和修改超时。</li>
+<li>解决： 过滤掉下线实例</li>
+</ul>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/12/CacheCloud常见问题/" rel="next" title="CacheCloud-部署使用常见问题(待续)">
+                <i class="fa fa-chevron-left"></i> CacheCloud-部署使用常见问题(待续)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/17/已存在Redis接入CacheCloud/" rel="prev" title="已存在Redis接入CacheCloud">
+                已存在Redis接入CacheCloud <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/04/12/bug修复日志/"
+           data-title="CacheCloud-功能升级和Bug修复日志" data-url="http://yoursite.com/2016/04/12/bug修复日志/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-03-18：添加机器后不能立刻出现在机器列表中-fixed-详情"><span class="nav-number">1.</span> <span class="nav-text">2016-03-18：添加机器后不能立刻出现在机器列表中(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-03-19：sentinel必须写死在配置中-fixed-详情"><span class="nav-number">2.</span> <span class="nav-text">2016-03-19：sentinel必须写死在配置中(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-03-21：保存机器收集信息报错-fixed-详情"><span class="nav-number">3.</span> <span class="nav-text">2016-03-21：保存机器收集信息报错(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-03-28：修复redis-cluster节点都在一台机器时，机器挂掉后，无法显示运维界面-fixed-详情"><span class="nav-number">4.</span> <span class="nav-text">2016-03-28：修复redis cluster节点都在一台机器时，机器挂掉后，无法显示运维界面(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-03-29：修复机器信息统计在centos7-debian等操作系统失效-fixed-详情"><span class="nav-number">5.</span> <span class="nav-text">2016-03-29：修复机器信息统计在centos7 debian等操作系统失效(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-03-31：启动脚本问题。-fixed-详情"><span class="nav-number">6.</span> <span class="nav-text">2016-03-31：启动脚本问题。(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-03-修复机器更新异常。-fixed-详情"><span class="nav-number">7.</span> <span class="nav-text">2016-04-03: 修复机器更新异常。(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-07-修复应用运维界面，运维后页面不刷新-fixed-详情"><span class="nav-number">8.</span> <span class="nav-text">2016-04-07: 修复应用运维界面，运维后页面不刷新 (fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-07-去掉InstanceInfo中的parentId-对应instance-info表-fixed-详情"><span class="nav-number">9.</span> <span class="nav-text">2016-04-07: 去掉InstanceInfo中的parentId(对应instance_info表)(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-07-JedisCluster初始化不需要指定主从关系-fixed-详情"><span class="nav-number">10.</span> <span class="nav-text">2016-04-07: JedisCluster初始化不需要指定主从关系(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-16-已存在Redis接入CacheCloud-fixed-详情"><span class="nav-number">11.</span> <span class="nav-text">2016-04-16: 已存在Redis接入CacheCloud(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-21-admin用户密码可配置-fixed-详情"><span class="nav-number">12.</span> <span class="nav-text">2016-04-21: admin用户密码可配置(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-21-获取机器最大的redis端口时，存在debian操作系统不兼容问题-fixed-详情"><span class="nav-number">13.</span> <span class="nav-text">2016-04-21: 获取机器最大的redis端口时，存在debian操作系统不兼容问题(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-04-24-修复删除机器不能删除机器相关的定时任务-fixed-详情"><span class="nav-number">14.</span> <span class="nav-text">2016-04-24: 修复删除机器不能删除机器相关的定时任务(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-05-04-应用驳回后无法显示驳回状态-fixed-详情"><span class="nav-number">15.</span> <span class="nav-text">2016-05-04: 应用驳回后无法显示驳回状态(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-05-04-优化审批流程-fixed-详情"><span class="nav-number">16.</span> <span class="nav-text">2016-05-04: 优化审批流程(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-05-04-配置修改迁移到应用界面-fixed-详情"><span class="nav-number">17.</span> <span class="nav-text">2016-05-04: 配置修改迁移到应用界面(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-05-06-服务器ssh端口暴露在配置文件中-fixed-详情"><span class="nav-number">18.</span> <span class="nav-text">2016-05-06: 服务器ssh端口暴露在配置文件中(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-05-09-优化客户端上报数据存储-fixed-详情"><span class="nav-number">19.</span> <span class="nav-text">2016-05-09: 优化客户端上报数据存储(fixed,详情)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2016-05-12-排除配置修改、网络流量展示、客户端实例列表中的下线应用-fixed-详情"><span class="nav-number">20.</span> <span class="nav-text">2016-05-12: 排除配置修改、网络流量展示、客户端实例列表中的下线应用(fixed,详情)</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

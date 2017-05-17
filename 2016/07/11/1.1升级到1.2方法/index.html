@@ -1,0 +1,748 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="一、数据升级1也可以参考Cachecloud.sql文件的变化 1.新加的系统配置12345678910insert into system_config(config_key,config_value,info,status,order_id) values(&amp;apos;redis.migrate.tool.home&amp;apos;,&amp;apos;/opt/cachecloud/redis-migra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CacheCloud 1.1升级到1.2的方法">
+<meta property="og:url" content="http://yoursite.com/2016/07/11/1.1升级到1.2方法/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="一、数据升级1也可以参考Cachecloud.sql文件的变化 1.新加的系统配置12345678910insert into system_config(config_key,config_value,info,status,order_id) values(&amp;apos;redis.migrate.tool.home&amp;apos;,&amp;apos;/opt/cachecloud/redis-migra">
+<meta property="og:updated_time" content="2016-11-03T15:15:37.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CacheCloud 1.1升级到1.2的方法">
+<meta name="twitter:description" content="一、数据升级1也可以参考Cachecloud.sql文件的变化 1.新加的系统配置12345678910insert into system_config(config_key,config_value,info,status,order_id) values(&amp;apos;redis.migrate.tool.home&amp;apos;,&amp;apos;/opt/cachecloud/redis-migra">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> CacheCloud 1.1升级到1.2的方法 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                CacheCloud 1.1升级到1.2的方法
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-11T11:20:00+08:00" content="2016-07-11">
+              2016-07-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/11/1.1升级到1.2方法/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/11/1.1升级到1.2方法/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/07/11/1.1升级到1.2方法/" class="leancloud_visitors" data-flag-title="CacheCloud 1.1升级到1.2的方法">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、数据升级"><a href="#一、数据升级" class="headerlink" title="一、数据升级"></a>一、数据升级</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">也可以参考Cachecloud.sql文件的变化</div></pre></td></tr></table></figure>
+<h5 id="1-新加的系统配置"><a href="#1-新加的系统配置" class="headerlink" title="1.新加的系统配置"></a>1.新加的系统配置</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;redis.migrate.tool.home&apos;,&apos;/opt/cachecloud/redis-migrate-tool/&apos;,&apos;redis-migrate-tool安装路径&apos;,1,18);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.user.login.type&apos;,&apos;1&apos;,&apos;用户登录状态保存方式(session或cookie)&apos;,1,19);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.cookie.domain&apos;,&apos;&apos;,&apos;cookie登录方式所需要的域名&apos;,1,20);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.base.dir&apos;,&apos;/opt&apos;,&apos;cachecloud根目录，要和cachecloud-init.sh脚本中的目录一致&apos;,1,21);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.app.client.conn.threshold&apos;,&apos;2000&apos;,&apos;应用连接数报警阀值&apos;,1,22);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.email.alert.interface&apos;,&apos;&apos;,&apos;邮件报警接口(说明:http://cachecloud.github.io 邮件和短信报警接口规范)&apos;,1,23);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.mobile.alert.interface&apos;,&apos;&apos;,&apos;短信报警接口(说明:http://cachecloud.github.io 邮件和短信报警接口规范)&apos;,1,24);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.ldap.url&apos;,&apos;&apos;,&apos;LDAP接口地址(例如:ldap://ldap.xx.com)&apos;,1,25);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.whether.schedule.clean.data&apos;,&apos;false&apos;,&apos;是否定期清理统计数据&apos;,1,26);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.app.secret.base.key&apos;,&apos;cachecloud-2014&apos;,&apos;appkey秘钥基准key&apos;,1,27);</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<h5 id="2-数据迁移工具"><a href="#2-数据迁移工具" class="headerlink" title="2.数据迁移工具"></a>2.数据迁移工具</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `app_data_migrate_status` (</div><div class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &apos;自增id&apos;,</div><div class="line">  `migrate_machine_ip` varchar(255) NOT NULL COMMENT &apos;迁移工具所在机器ip&apos;,</div><div class="line">  `migrate_machine_port` int NOT NULL COMMENT &apos;迁移工具所占port&apos;,</div><div class="line">  `source_migrate_type` tinyint(4) NOT NULL COMMENT &apos;源迁移类型,0:single,1:redis cluster,2:rdb file,3:twemproxy&apos;,</div><div class="line">  `source_servers` varchar(2048) NOT NULL COMMENT &apos;源实例列表&apos;,</div><div class="line">  `target_migrate_type` tinyint(4) NOT NULL COMMENT &apos;目标迁移类型,0:single,1:redis cluster,2:rdb file,3:twemproxy&apos;,</div><div class="line">  `target_servers` varchar(2048) NOT NULL COMMENT &apos;目标实例列表&apos;,</div><div class="line">  `source_app_id` bigint(20) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;源应用id&apos;,</div><div class="line">  `target_app_id` bigint(20) NOT NULL DEFAULT &apos;0&apos; COMMENT &apos;目标应用id&apos;,</div><div class="line">  `user_id` bigint(20) NOT NULL COMMENT &apos;操作人&apos;,</div><div class="line">  `status` tinyint(4) NOT NULL COMMENT &apos;迁移执行状态,0:开始,1:结束,2:异常&apos;,</div><div class="line">  `start_time` datetime NOT NULL COMMENT &apos;迁移开始执行时间&apos;,</div><div class="line">  `end_time` datetime DEFAULT NULL COMMENT &apos;迁移结束执行时间&apos;,</div><div class="line">  `log_path` varchar(255) NOT NULL COMMENT &apos;日志文件路径&apos;,</div><div class="line">  `config_path` varchar(255) NOT NULL COMMENT &apos;配置文件路径&apos;,</div><div class="line">  PRIMARY KEY (`id`)</div><div class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;迁移状态&apos;;</div></pre></td></tr></table></figure>
+<h4 id="3-Redis配置模板"><a href="#3-Redis配置模板" class="headerlink" title="3.Redis配置模板"></a>3.Redis配置模板</h4><p>(1) 建表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `instance_config` (</div><div class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</div><div class="line">  `config_key` varchar(128) NOT NULL COMMENT &apos;配置名&apos;,</div><div class="line">  `config_value` varchar(512) NOT NULL COMMENT &apos;配置值&apos;,</div><div class="line">  `info` varchar(512) NOT NULL COMMENT &apos;配置说明&apos;,</div><div class="line">  `update_time` datetime NOT NULL COMMENT &apos;更新时间&apos;,</div><div class="line">  `type` mediumint(9) NOT NULL COMMENT &apos;类型：2.cluster节点特殊配置, 5:sentinel节点配置, 6:redis普通节点&apos;,</div><div class="line">  status tinyint not null comment &apos;1有效,0无效&apos;,</div><div class="line">  PRIMARY KEY (`id`),</div><div class="line">  UNIQUE KEY `config_key_type` (`config_key`,`type`)</div><div class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8;</div></pre></td></tr></table></figure></p>
+<p>(2) 数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div></pre></td><td class="code"><pre><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;cluster-enabled&apos;,&apos;yes&apos;,&apos;是否开启集群模式&apos;,now(),2,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;cluster-node-timeout&apos;,&apos;15000&apos;,&apos;集群节点超时时间,默认15秒&apos;,now(),2,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;cluster-slave-validity-factor&apos;,&apos;10&apos;,&apos;从节点延迟有效性判断因子,默认10秒&apos;,now(),2,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;cluster-migration-barrier&apos;,&apos;1&apos;,&apos;主从迁移至少需要的从节点数,默认1个&apos;,now(),2,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;cluster-config-file&apos;,&apos;nodes-%d.conf&apos;,&apos;集群配置文件名称,格式:nodes-&#123;port&#125;.conf&apos;,now(),2,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;cluster-require-full-coverage&apos;,&apos;no&apos;,&apos;节点部分失败期间,其他节点是否继续工作&apos;,now(),2,1);</div><div class="line"></div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;port&apos;,&apos;%d&apos;,&apos;sentinel实例端口&apos;,now(),5,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;dir&apos;,&apos;%s&apos;,&apos;工作目录&apos;,now(),5,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;sentinel monitor&apos;,&apos;%s %s %d 1&apos;,&apos;master名称定义和最少参与监控的sentinel数,格式:masterName ip port num&apos;,now(),5,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;sentinel down-after-milliseconds&apos;,&apos;%s 20000&apos;,&apos;Sentinel判定服务器断线的毫秒数&apos;,now(),5,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;sentinel failover-timeout&apos;,&apos;%s 180000&apos;,&apos;故障迁移超时时间,默认:3分钟&apos;,now(),5,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;sentinel parallel-syncs&apos;,&apos;%s 1&apos;,&apos;在执行故障转移时,最多有多少个从服务器同时对新的主服务器进行同步,默认:1&apos;,now(),5,1);</div><div class="line"></div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;daemonize&apos;,&apos;no&apos;,&apos;是否守护进程&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;tcp-backlog&apos;,&apos;511&apos;,&apos;TCP连接完成队列&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;timeout&apos;,&apos;0&apos;,&apos;客户端闲置多少秒后关闭连接,默认为0,永不关闭&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;tcp-keepalive&apos;,&apos;60&apos;,&apos;检测客户端是否健康周期,默认关闭&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;loglevel&apos;,&apos;notice&apos;,&apos;日志级别&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;databases&apos;,&apos;16&apos;,&apos;可用的数据库数，默认值为16个,默认数据库为0&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;dir&apos;,&apos;%s&apos;,&apos;redis工作目录&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;stop-writes-on-bgsave-error&apos;,&apos;no&apos;,&apos;bgsave出错了不停写&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-timeout&apos;,&apos;60&apos;,&apos;master批量数据传输时间或者ping回复时间间隔,默认:60秒&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-ping-slave-period&apos;,&apos;10&apos;,&apos;指定slave定期ping master的周期,默认:10秒&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-disable-tcp-nodelay&apos;,&apos;no&apos;,&apos;是否禁用socket的NO_DELAY,默认关闭，影响主从延迟&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-backlog-size&apos;,&apos;10M&apos;,&apos;复制缓存区,默认:1mb,配置为:10Mb&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-backlog-ttl&apos;,&apos;7200&apos;,&apos;master在没有Slave的情况下释放BACKLOG的时间多久:默认:3600,配置为:7200&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;slave-serve-stale-data&apos;,&apos;yes&apos;,&apos;当slave服务器和master服务器失去连接后，或者当数据正在复制传输的时候，如果此参数值设置“yes”，slave服务器可以继续接受客户端的请求&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;slave-read-only&apos;,&apos;yes&apos;,&apos;slave服务器节点是否只读,cluster的slave节点默认读写都不可用,需要调用readonly开启可读模式&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;slave-priority&apos;,&apos;100&apos;,&apos;slave的优先级,影响sentinel/cluster晋升master操作,0永远不晋升&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;lua-time-limit&apos;,&apos;5000&apos;,&apos;Lua脚本最长的执行时间，单位为毫秒&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;slowlog-log-slower-than&apos;,&apos;10000&apos;,&apos;慢查询被记录的阀值,默认10毫秒&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;slowlog-max-len&apos;,&apos;128&apos;,&apos;最多记录慢查询的条数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;hash-max-ziplist-entries&apos;,&apos;512&apos;,&apos;hash数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;hash-max-ziplist-value&apos;,&apos;64&apos;,&apos;hash数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;list-max-ziplist-entries&apos;,&apos;512&apos;,&apos;list数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;list-max-ziplist-value&apos;,&apos;64&apos;,&apos;list数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;set-max-intset-entries&apos;,&apos;512&apos;,&apos;set数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;zset-max-ziplist-entries&apos;,&apos;128&apos;,&apos;zset数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;zset-max-ziplist-value&apos;,&apos;64&apos;,&apos;zset数据结构优化参数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;activerehashing&apos;,&apos;yes&apos;,&apos;是否激活重置哈希,默认:yes&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;client-output-buffer-limit normal&apos;,&apos;0 0 0&apos;,&apos;客户端输出缓冲区限制(客户端)&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;client-output-buffer-limit slave&apos;,&apos;512mb 128mb 60&apos;,&apos;客户端输出缓冲区限制(复制)&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;client-output-buffer-limit pubsub&apos;,&apos;32mb 8mb 60&apos;,&apos;客户端输出缓冲区限制(发布订阅)&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;hz&apos;,&apos;10&apos;,&apos;执行后台task数量,默认:10&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;port&apos;,&apos;%d&apos;,&apos;端口&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;maxmemory&apos;,&apos;%dmb&apos;,&apos;当前实例最大可用内存&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;maxmemory-policy&apos;,&apos;volatile-lru&apos;,&apos;内存不够时,淘汰策略,默认:volatile-lru&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;appendonly&apos;,&apos;yes&apos;,&apos;开启append only持久化模式&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;appendfsync&apos;,&apos;everysec&apos;,&apos;默认:aof每秒同步一次&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;appendfilename&apos;,&apos;appendonly-%d.aof&apos;,&apos;aof文件名称,默认:appendonly-&#123;port&#125;.aof&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;dbfilename&apos;,&apos;dump-%d.rdb&apos;,&apos;RDB文件默认名称,默认dump-&#123;port&#125;.rdb&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;aof-rewrite-incremental-fsync&apos;,&apos;yes&apos;,&apos;aof rewrite过程中,是否采取增量文件同步策略,默认:yes&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;no-appendfsync-on-rewrite&apos;,&apos;yes&apos;,&apos;是否在后台aof文件rewrite期间调用fsync,默认调用,修改为yes,防止可能fsync阻塞,但可能丢失rewrite期间的数据&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;auto-aof-rewrite-min-size&apos;,&apos;64m&apos;,&apos;触发rewrite的aof文件最小阀值,默认64m&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;auto-aof-rewrite-percentage&apos;,&apos;%d&apos;,&apos;Redis重写aof文件的比例条件,默认从100开始,统一机器下不同实例按4%递减&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;rdbcompression&apos;,&apos;yes&apos;,&apos;rdb是否压缩&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;rdbchecksum&apos;,&apos;yes&apos;,&apos;rdb校验和&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-diskless-sync&apos;,&apos;no&apos;,&apos;开启无盘复制&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;repl-diskless-sync-delay&apos;,&apos;5&apos;,&apos;无盘复制延时&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;save 900&apos;,&apos;1&apos;,&apos;900秒有一次修改做bgsave&apos;,now(),6,0);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;save 300&apos;,&apos;10&apos;,&apos;300秒有10次修改做bgsave&apos;,now(),6,0);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;save 60&apos;,&apos;10000&apos;,&apos;60秒有10000次修改做bgsave&apos;,now(),6,0);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;maxclients&apos;,&apos;10000&apos;,&apos;客户端最大连接数&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;hll-sparse-max-bytes&apos;,&apos;3000&apos;,&apos;HyperLogLog稀疏表示限制设置	&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;min-slaves-to-write&apos;,&apos;0&apos;,&apos;当slave数量小于min-slaves-to-write，且延迟小于等于min-slaves-max-lag时， master停止写入操作&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;min-slaves-max-lag&apos;,&apos;10&apos;,&apos;当slave服务器和master服务器失去连接后，或者当数据正在复制传输的时候，如果此参数值设置yes，slave服务器可以继续接受客户端的请求&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;aof-load-truncated&apos;,&apos;yes&apos;,&apos;加载aof文件时，是否忽略aof文件不完整的情况，是否Redis正常启动&apos;,now(),6,1);</div><div class="line">insert into instance_config(config_key,config_value,info,update_time, type, status) values(&apos;notify-keyspace-events&apos;,&apos;&apos;,&apos;keyspace事件通知功能&apos;,now(),6,1);</div></pre></td></tr></table></figure></p>
+<h4 id="4-表结构调整"><a href="#4-表结构调整" class="headerlink" title="4.表结构调整"></a>4.表结构调整</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">alter table app_desc add column client_conn_alert_value int(11) DEFAULT 2000 COMMENT &apos;客户端连接报警阀值&apos;;</div><div class="line">alter table app_desc add column app_key varchar(255) DEFAULT NULL COMMENT &apos;应用秘钥&apos;;</div><div class="line"></div><div class="line">alter table instance_statistics add column mem_fragmentation_ratio double default 0 COMMENT &apos;碎片率&apos;;</div><div class="line">alter table instance_statistics add column aof_delayed_fsync int default 0 COMMENT &apos;aof阻塞次数&apos;;</div><div class="line">update machine_info set available=1;</div><div class="line">ALTER TABLE `machine_info` ADD COLUMN `collect` int DEFAULT 1 COMMENT &apos;switch of collect server status, 1:open, 0:close&apos;;</div></pre></td></tr></table></figure>
+<h4 id="5-机器统计相关"><a href="#5-机器统计相关" class="headerlink" title="5.机器统计相关"></a>5.机器统计相关</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">DROP TABLE IF EXISTS `server`;</div><div class="line">CREATE TABLE `server` (</div><div class="line">  `ip` varchar(16) NOT NULL COMMENT &apos;ip&apos;,</div><div class="line">  `host` varchar(255) DEFAULT NULL COMMENT &apos;host&apos;,</div><div class="line">  `nmon` varchar(255) DEFAULT NULL COMMENT &apos;nmon version&apos;,</div><div class="line">  `cpus` tinyint(4) DEFAULT NULL COMMENT &apos;logic cpu num&apos;,</div><div class="line">  `cpu_model` varchar(255) DEFAULT NULL COMMENT &apos;cpu 型号&apos;,</div><div class="line">  `dist` varchar(255) DEFAULT NULL COMMENT &apos;发行版信息&apos;,</div><div class="line">  `kernel` varchar(255) DEFAULT NULL COMMENT &apos;内核信息&apos;,</div><div class="line">  `ulimit` varchar(255) DEFAULT NULL COMMENT &apos;ulimit -n,ulimit -u&apos;,</div><div class="line">  `updatetime` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,</div><div class="line">  PRIMARY KEY (`ip`)</div><div class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8;</div><div class="line"></div><div class="line">DROP TABLE IF EXISTS `server_stat`;</div><div class="line">CREATE TABLE `server_stat` (</div><div class="line">  `ip` varchar(16) NOT NULL COMMENT &apos;ip&apos;,</div><div class="line">  `cdate` date NOT NULL COMMENT &apos;数据收集天&apos;,</div><div class="line">  `ctime` char(4) NOT NULL COMMENT &apos;数据收集小时分钟&apos;,</div><div class="line">  `cuser` float DEFAULT NULL COMMENT &apos;用户态占比&apos;,</div><div class="line">  `csys` float DEFAULT NULL COMMENT &apos;内核态占比&apos;,</div><div class="line">  `cwio` float DEFAULT NULL COMMENT &apos;wio占比&apos;,</div><div class="line">  `c_ext` text COMMENT &apos;子cpu占比&apos;,</div><div class="line">  `cload1` float DEFAULT NULL COMMENT &apos;1分钟load&apos;,</div><div class="line">  `cload5` float DEFAULT NULL COMMENT &apos;5分钟load&apos;,</div><div class="line">  `cload15` float DEFAULT NULL COMMENT &apos;15分钟load&apos;,</div><div class="line">  `mtotal` float DEFAULT NULL COMMENT &apos;总内存,单位M&apos;,</div><div class="line">  `mfree` float DEFAULT NULL COMMENT &apos;空闲内存&apos;,</div><div class="line">  `mcache` float DEFAULT NULL COMMENT &apos;cache&apos;,</div><div class="line">  `mbuffer` float DEFAULT NULL COMMENT &apos;buffer&apos;,</div><div class="line">  `mswap` float DEFAULT NULL COMMENT &apos;cache&apos;,</div><div class="line">  `mswap_free` float DEFAULT NULL COMMENT &apos;cache&apos;,</div><div class="line">  `nin` float DEFAULT NULL COMMENT &apos;网络入流量 单位K/s&apos;,</div><div class="line">  `nout` float DEFAULT NULL COMMENT &apos;网络出流量 单位k/s&apos;,</div><div class="line">  `nin_ext` text COMMENT &apos;各网卡入流量详情&apos;,</div><div class="line">  `nout_ext` text COMMENT &apos;各网卡出流量详情&apos;,</div><div class="line">  `tuse` int(11) DEFAULT NULL COMMENT &apos;tcp estab连接数&apos;,</div><div class="line">  `torphan` int(11) DEFAULT NULL COMMENT &apos;tcp orphan连接数&apos;,</div><div class="line">  `twait` int(11) DEFAULT NULL COMMENT &apos;tcp time wait连接数&apos;,</div><div class="line">  `dread` float DEFAULT NULL COMMENT &apos;磁盘读速率 单位K/s&apos;,</div><div class="line">  `dwrite` float DEFAULT NULL COMMENT &apos;磁盘写速率 单位K/s&apos;,</div><div class="line">  `diops` float DEFAULT NULL COMMENT &apos;磁盘io速率 交互次数/s&apos;,</div><div class="line">  `dbusy` float DEFAULT NULL COMMENT &apos;磁盘io带宽使用百分比&apos;,</div><div class="line">  `d_ext` text COMMENT &apos;磁盘各分区占比&apos;,</div><div class="line">  `dspace` text COMMENT &apos;磁盘各分区空间使用率&apos;,</div><div class="line">  PRIMARY KEY (`ip`,`cdate`,`ctime`)</div><div class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8;</div></pre></td></tr></table></figure>
+<h4 id="二、升级cachecloud版本"><a href="#二、升级cachecloud版本" class="headerlink" title="二、升级cachecloud版本"></a>二、升级cachecloud版本</h4><p>前往cachecloud的<a href="https://github.com/sohutv/cachecloud" target="_blank" rel="external">github主页</a>，下载release1.2版本。<br>部署方法与之前版本是一样的，这里就不在赘述了，可以去<a href="http://cachecloud.github.io/2016/04/12/CacheCloud%E6%96%87%E6%A1%A3%E5%BD%92%E6%A1%A3/" target="_blank" rel="external">这里</a>进行查询</p>
+<h4 id="三、相关视频"><a href="#三、相关视频" class="headerlink" title="三、相关视频"></a>三、相关视频</h4>
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/06/28/1.2. CacheCloud 1.2开发计划/" rel="next" title="CacheCloud 1.2开发计划">
+                <i class="fa fa-chevron-left"></i> CacheCloud 1.2开发计划
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/11/1.2. CacheCloud 1.2更新列表/" rel="prev" title="CacheCloud 1.2更新列表">
+                CacheCloud 1.2更新列表 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/07/11/1.1升级到1.2方法/"
+           data-title="CacheCloud 1.1升级到1.2的方法" data-url="http://yoursite.com/2016/07/11/1.1升级到1.2方法/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、数据升级"><span class="nav-number">1.</span> <span class="nav-text">一、数据升级</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-新加的系统配置"><span class="nav-number">1.1.</span> <span class="nav-text">1.新加的系统配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-数据迁移工具"><span class="nav-number">1.2.</span> <span class="nav-text">2.数据迁移工具</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Redis配置模板"><span class="nav-number">2.</span> <span class="nav-text">3.Redis配置模板</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-表结构调整"><span class="nav-number">3.</span> <span class="nav-text">4.表结构调整</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-机器统计相关"><span class="nav-number">4.</span> <span class="nav-text">5.机器统计相关</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、升级cachecloud版本"><span class="nav-number">5.</span> <span class="nav-text">二、升级cachecloud版本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、相关视频"><span class="nav-number">6.</span> <span class="nav-text">三、相关视频</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

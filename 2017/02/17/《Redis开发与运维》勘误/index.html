@@ -1,0 +1,836 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="《Redis开发与运维》勘误列表第1版第1次印刷1. 第46页1lpsh应该是lpush  1感谢ChowRex 2. 第110页1多了一个句号">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Redis开发与运维》勘误列表">
+<meta property="og:url" content="http://yoursite.com/2017/02/17/《Redis开发与运维》勘误/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="《Redis开发与运维》勘误列表第1版第1次印刷1. 第46页1lpsh应该是lpush  1感谢ChowRex 2. 第110页1多了一个句号">
+<meta property="og:image" content="http://i0.itc.cn/20170307/3084_68561a7e_77a5_f36d_001d_4ef29c70e00b_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170308/3084_a51afc43_1d3a_e333_934b_b0fd85a11a0a_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170308/3084_d23db9c5_d974_f550_b276_d796f9555cd7_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170308/3084_ed65aaae_a60b_5a01_e917_764579da0651_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170405/3084_c4ea7bff_53b1_6429_af28_71a4a1c13c68_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170308/3084_d967b831_04f5_ca3b_cfbc_f760e06e3b5d_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20170311/3084_93fe5ab5_5194_09f8_559e_7592fcbe19cc_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170315/3084_407649ff_0188_2142_ba01_255b3f43f387_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170311/3084_95a91cf8_33a3_877e_fc5f_b409fbc04059_1.png">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1493878-76a1a30663b6dfa0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://i3.itc.cn/20170315/3084_e81dad8a_73cc_cd9a_7dff_623792c25885_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170315/3084_6f0bd7f8_a02a_f51d_ad11_2db5f56975c5_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170315/3084_95a5082a_7f5b_c5f2_a54f_dbff31212bcc_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170315/3084_a747939e_80b8_e395_58c8_c4e013479b1f_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170317/3084_c398c6ff_1743_4fd7_1ef2_984c22e16304_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170320/3084_7f2b458e_8490_fb1c_0d59_cf93586b8d62_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170320/3084_050e5440_053d_1d33_3a7f_ef5f608840e1_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20170401/3084_23d9a17c_6102_ef35_a8d9_0c5410c94955_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170406/3084_51a55a8a_a08e_b824_3228_78e3d5d8ddfe_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170407/3084_00d6936e_45cb_b655_cf20_6f550f175467_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170407/3084_02a75f3e_25a8_3c6c_6a17_ac9de8a7f00c_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170407/3084_956e8d02_e5e3_5921_fcc8_002d6fa1eaa5_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170407/3084_07bf1661_de2d_01d4_e542_628abc453c03_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170407/3084_27b47473_4252_cb63_81ef_4ede9ebb7366_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170411/3084_41ef6de3_0a72_5191_78d5_8ea7347de5e3_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170411/3084_78f7d983_e2a9_a552_615b_5db4427b99ec_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170414/3084_fcc5100b_a8be_f4cc_5069_02905be209ee_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170422/3084_a39e7b98_9019_4206_c901_e537c5c4c47e_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170422/3084_628bbd53_5c7f_00f0_8f7b_b66d4e08530c_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20170426/3084_b7aac24d_ee19_b167_23cd_fdddade016ed_1.png">
+<meta property="og:updated_time" content="2017-04-26T09:20:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《Redis开发与运维》勘误列表">
+<meta name="twitter:description" content="《Redis开发与运维》勘误列表第1版第1次印刷1. 第46页1lpsh应该是lpush  1感谢ChowRex 2. 第110页1多了一个句号">
+<meta name="twitter:image" content="http://i0.itc.cn/20170307/3084_68561a7e_77a5_f36d_001d_4ef29c70e00b_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 《Redis开发与运维》勘误列表 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                《Redis开发与运维》勘误列表
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-17T17:20:00+08:00" content="2017-02-17">
+              2017-02-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Redis开发与运维/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis开发与运维</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/02/17/《Redis开发与运维》勘误/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/17/《Redis开发与运维》勘误/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/02/17/《Redis开发与运维》勘误/" class="leancloud_visitors" data-flag-title="《Redis开发与运维》勘误列表">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="《Redis开发与运维》勘误列表"><a href="#《Redis开发与运维》勘误列表" class="headerlink" title="《Redis开发与运维》勘误列表"></a>《Redis开发与运维》勘误列表</h2><h3 id="第1版第1次印刷"><a href="#第1版第1次印刷" class="headerlink" title="第1版第1次印刷"></a>第1版第1次印刷</h3><h4 id="1-第46页"><a href="#1-第46页" class="headerlink" title="1. 第46页"></a>1. 第46页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lpsh应该是lpush</div></pre></td></tr></table></figure>
+<p><img src="http://i0.itc.cn/20170307/3084_68561a7e_77a5_f36d_001d_4ef29c70e00b_1.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">感谢ChowRex</div></pre></td></tr></table></figure>
+<h4 id="2-第110页"><a href="#2-第110页" class="headerlink" title="2. 第110页"></a>2. 第110页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">多了一个句号</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170308/3084_a51afc43_1d3a_e333_934b_b0fd85a11a0a_1.png" alt=""></p>
+<a id="more"></a>
+<h4 id="3-第111页"><a href="#3-第111页" class="headerlink" title="3. 第111页"></a>3. 第111页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">多了一个黑点</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170308/3084_d23db9c5_d974_f550_b276_d796f9555cd7_1.png" alt=""></p>
+<h4 id="4-第170页"><a href="#4-第170页" class="headerlink" title="4. 第170页"></a>4. 第170页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">应该是slaveof 127.0.0.1 6381，没有冒号</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170308/3084_ed65aaae_a60b_5a01_e917_764579da0651_1.png" alt=""></p>
+<h4 id="5-第383页"><a href="#5-第383页" class="headerlink" title="5. 第383页"></a>5. 第383页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">应该是serializedlength对应的值</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170405/3084_c4ea7bff_53b1_6429_af28_71a4a1c13c68_1.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">感谢christian@百度外卖</div></pre></td></tr></table></figure>
+<h4 id="6-第190页"><a href="#6-第190页" class="headerlink" title="6. 第190页"></a>6. 第190页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">RedisAppender之间没有空格</div></pre></td></tr></table></figure>
+<p><img src="http://i3.itc.cn/20170308/3084_d967b831_04f5_ca3b_cfbc_f760e06e3b5d_1.png" alt=""></p>
+<h4 id="7-第59页"><a href="#7-第59页" class="headerlink" title="7. 第59页"></a>7. 第59页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">很抱歉，这个错误很严重，整个弄乱弄了，见图</div></pre></td></tr></table></figure>
+<p><img src="http://i0.itc.cn/20170311/3084_93fe5ab5_5194_09f8_559e_7592fcbe19cc_1.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">笔误，score和member写反了。</div></pre></td></tr></table></figure>
+<p><img src="http://i3.itc.cn/20170315/3084_407649ff_0188_2142_ba01_255b3f43f387_1.png" alt=""></p>
+<h4 id="8-第99页"><a href="#8-第99页" class="headerlink" title="8. 第99页"></a>8. 第99页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">应该是 getbit</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170311/3084_95a91cf8_33a3_877e_fc5f_b409fbc04059_1.png" alt=""></p>
+<h4 id="9-第24页"><a href="#9-第24页" class="headerlink" title="9. 第24页"></a>9. 第24页</h4><p>两处错误，如图所示<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">1次get，应该是1次mget</div><div class="line">1次met，应该是1次mget</div></pre></td></tr></table></figure></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1493878-76a1a30663b6dfa0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">感谢折800的孙麒麟</div></pre></td></tr></table></figure>
+<h4 id="10-第60页"><a href="#10-第60页" class="headerlink" title="10. 第60页"></a>10. 第60页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">笔误，score和member写反了。</div></pre></td></tr></table></figure>
+<p><img src="http://i3.itc.cn/20170315/3084_e81dad8a_73cc_cd9a_7dff_623792c25885_1.png" alt=""></p>
+<h4 id="11-第369页"><a href="#11-第369页" class="headerlink" title="11. 第369页"></a>11. 第369页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">降低---&gt;加快</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170315/3084_6f0bd7f8_a02a_f51d_ad11_2db5f56975c5_1.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">感谢黄建</div></pre></td></tr></table></figure>
+<h4 id="12-第175页"><a href="#12-第175页" class="headerlink" title="12.第175页"></a>12.第175页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">少一个p, replication</div></pre></td></tr></table></figure>
+<p><img src="http://i3.itc.cn/20170315/3084_95a5082a_7f5b_c5f2_a54f_dbff31212bcc_1.png" alt=""></p>
+<h4 id="13-第176页"><a href="#13-第176页" class="headerlink" title="13.第176页"></a>13.第176页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">少一个p, replication</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170315/3084_a747939e_80b8_e395_58c8_c4e013479b1f_1.png" alt=""></p>
+<h4 id="14-第177页"><a href="#14-第177页" class="headerlink" title="14.第177页"></a>14.第177页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">少个6379，不过也可以去掉-p，但和上面就不统一了。</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170317/3084_c398c6ff_1743_4fd7_1ef2_984c22e16304_1.png" alt=""></p>
+<h4 id="15-第278页"><a href="#15-第278页" class="headerlink" title="15.第278页"></a>15.第278页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">应该是mset</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170320/3084_7f2b458e_8490_fb1c_0d59_cf93586b8d62_1.png" alt=""></p>
+<h4 id="16-第38页"><a href="#16-第38页" class="headerlink" title="16.第38页"></a>16.第38页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">a --&gt; c</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170320/3084_050e5440_053d_1d33_3a7f_ef5f608840e1_1.png" alt=""></p>
+<h4 id="17-第406页"><a href="#17-第406页" class="headerlink" title="17.第406页"></a>17.第406页</h4><p>两个错别字<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">一值到---&gt;直到</div><div class="line">去掉 起</div></pre></td></tr></table></figure></p>
+<p><img src="http://i0.itc.cn/20170401/3084_23d9a17c_6102_ef35_a8d9_0c5410c94955_1.png" alt=""></p>
+<h3 id="第1版第2次印刷"><a href="#第1版第2次印刷" class="headerlink" title="第1版第2次印刷"></a>第1版第2次印刷</h3><h4 id="1-第44页"><a href="#1-第44页" class="headerlink" title="1. 第44页"></a>1. 第44页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">如图，多了一个字母r</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170406/3084_51a55a8a_a08e_b824_3228_78e3d5d8ddfe_1.png" alt=""></p>
+<h4 id="2-第66页"><a href="#2-第66页" class="headerlink" title="2.第66页"></a>2.第66页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">应该是6380</div></pre></td></tr></table></figure>
+<p><img src="http://i3.itc.cn/20170407/3084_00d6936e_45cb_b655_cf20_6f550f175467_1.png" alt=""></p>
+<p>第1版第2次印刷</p>
+<h4 id="3-第425页"><a href="#3-第425页" class="headerlink" title="3.第425页"></a>3.第425页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">应该是13-48</div></pre></td></tr></table></figure>
+<p><img src="http://i2.itc.cn/20170407/3084_02a75f3e_25a8_3c6c_6a17_ac9de8a7f00c_1.png" alt=""></p>
+<h4 id="4-第419页"><a href="#4-第419页" class="headerlink" title="4.第419页"></a>4.第419页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">所有的---&gt;所需的</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170407/3084_956e8d02_e5e3_5921_fcc8_002d6fa1eaa5_1.png" alt=""></p>
+<h4 id="5-第416页"><a href="#5-第416页" class="headerlink" title="5.第416页"></a>5.第416页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">去掉多余的节点</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170407/3084_07bf1661_de2d_01d4_e542_628abc453c03_1.png" alt=""></p>
+<h4 id="6-第2页"><a href="#6-第2页" class="headerlink" title="6.第2页"></a>6.第2页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">除此----&gt;如此</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170407/3084_27b47473_4252_cb63_81ef_4ede9ebb7366_1.png" alt=""></p>
+<h4 id="7-第396页"><a href="#7-第396页" class="headerlink" title="7.第396页"></a>7.第396页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">闭关----&gt;关闭</div></pre></td></tr></table></figure>
+<p><img src="http://i1.itc.cn/20170411/3084_41ef6de3_0a72_5191_78d5_8ea7347de5e3_1.png" alt=""></p>
+<h4 id="8-第173页"><a href="#8-第173页" class="headerlink" title="8.第173页"></a>8.第173页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">6380----&gt;6379</div></pre></td></tr></table></figure>
+<p><img src="http://i2.itc.cn/20170411/3084_78f7d983_e2a9_a552_615b_5db4427b99ec_1.png" alt=""></p>
+<h4 id="9-第48页"><a href="#9-第48页" class="headerlink" title="9.第48页"></a>9.第48页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">如图</div></pre></td></tr></table></figure>
+<p><img src="http://i3.itc.cn/20170414/3084_fcc5100b_a8be_f4cc_5069_02905be209ee_1.png" alt=""></p>
+<h4 id="10-第162页"><a href="#10-第162页" class="headerlink" title="10.第162页"></a>10.第162页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">错误 --&gt; 操作</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170422/3084_a39e7b98_9019_4206_c901_e537c5c4c47e_1.png" alt=""></p>
+<h4 id="11-第10页"><a href="#11-第10页" class="headerlink" title="11.第10页"></a>11.第10页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">去掉</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170422/3084_628bbd53_5c7f_00f0_8f7b_b66d4e08530c_1.png" alt=""></p>
+<h4 id="12-第153页"><a href="#12-第153页" class="headerlink" title="12.第153页"></a>12.第153页</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">如图</div></pre></td></tr></table></figure>
+<p><img src="http://mfiles.sohu.com/20170426/3084_b7aac24d_ee19_b167_23cd_fdddade016ed_1.png" alt=""></p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/16/Redis内存优化/" rel="next" title="Redis的内存优化">
+                <i class="fa fa-chevron-left"></i> Redis的内存优化
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/20/Redis热点key寻找与优化/" rel="prev" title="Redis热点key寻找与优化">
+                Redis热点key寻找与优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/02/17/《Redis开发与运维》勘误/"
+           data-title="《Redis开发与运维》勘误列表" data-url="http://yoursite.com/2017/02/17/《Redis开发与运维》勘误/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#《Redis开发与运维》勘误列表"><span class="nav-number">1.</span> <span class="nav-text">《Redis开发与运维》勘误列表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第1版第1次印刷"><span class="nav-number">1.1.</span> <span class="nav-text">第1版第1次印刷</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-第46页"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 第46页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-第110页"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 第110页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-第111页"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. 第111页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-第170页"><span class="nav-number">1.1.4.</span> <span class="nav-text">4. 第170页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-第383页"><span class="nav-number">1.1.5.</span> <span class="nav-text">5. 第383页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-第190页"><span class="nav-number">1.1.6.</span> <span class="nav-text">6. 第190页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-第59页"><span class="nav-number">1.1.7.</span> <span class="nav-text">7. 第59页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-第99页"><span class="nav-number">1.1.8.</span> <span class="nav-text">8. 第99页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-第24页"><span class="nav-number">1.1.9.</span> <span class="nav-text">9. 第24页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-第60页"><span class="nav-number">1.1.10.</span> <span class="nav-text">10. 第60页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-第369页"><span class="nav-number">1.1.11.</span> <span class="nav-text">11. 第369页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-第175页"><span class="nav-number">1.1.12.</span> <span class="nav-text">12.第175页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-第176页"><span class="nav-number">1.1.13.</span> <span class="nav-text">13.第176页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-第177页"><span class="nav-number">1.1.14.</span> <span class="nav-text">14.第177页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-第278页"><span class="nav-number">1.1.15.</span> <span class="nav-text">15.第278页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-第38页"><span class="nav-number">1.1.16.</span> <span class="nav-text">16.第38页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#17-第406页"><span class="nav-number">1.1.17.</span> <span class="nav-text">17.第406页</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第1版第2次印刷"><span class="nav-number">1.2.</span> <span class="nav-text">第1版第2次印刷</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-第44页"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 第44页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-第66页"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.第66页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-第425页"><span class="nav-number">1.2.3.</span> <span class="nav-text">3.第425页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-第419页"><span class="nav-number">1.2.4.</span> <span class="nav-text">4.第419页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-第416页"><span class="nav-number">1.2.5.</span> <span class="nav-text">5.第416页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-第2页"><span class="nav-number">1.2.6.</span> <span class="nav-text">6.第2页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-第396页"><span class="nav-number">1.2.7.</span> <span class="nav-text">7.第396页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-第173页"><span class="nav-number">1.2.8.</span> <span class="nav-text">8.第173页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-第48页"><span class="nav-number">1.2.9.</span> <span class="nav-text">9.第48页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-第162页"><span class="nav-number">1.2.10.</span> <span class="nav-text">10.第162页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-第10页"><span class="nav-number">1.2.11.</span> <span class="nav-text">11.第10页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-第153页"><span class="nav-number">1.2.12.</span> <span class="nav-text">12.第153页</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

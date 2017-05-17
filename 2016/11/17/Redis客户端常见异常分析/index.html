@@ -1,0 +1,886 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文部分内容来自《Redis开发与运维》一书，转载请声明。在Redis客户端的使用过程中，无论是客户端使用不当或者Redis服务端出现问题，客户端会反应出一些异常，下面分析一下Jedis使用过程中常见的异常情况： 一.无法从连接池获取到连接JedisPool中的Jedis对象个数是有限的，默认是8个。这里假设使用的默认配置，如果有8个Jedis对象被占用，并且没有归还，如果调用者还要从JedisP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis客户端常见异常分析">
+<meta property="og:url" content="http://yoursite.com/2016/11/17/Redis客户端常见异常分析/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="本文部分内容来自《Redis开发与运维》一书，转载请声明。在Redis客户端的使用过程中，无论是客户端使用不当或者Redis服务端出现问题，客户端会反应出一些异常，下面分析一下Jedis使用过程中常见的异常情况： 一.无法从连接池获取到连接JedisPool中的Jedis对象个数是有限的，默认是8个。这里假设使用的默认配置，如果有8个Jedis对象被占用，并且没有归还，如果调用者还要从JedisP">
+<meta property="og:updated_time" content="2016-11-28T01:01:09.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis客户端常见异常分析">
+<meta name="twitter:description" content="本文部分内容来自《Redis开发与运维》一书，转载请声明。在Redis客户端的使用过程中，无论是客户端使用不当或者Redis服务端出现问题，客户端会反应出一些异常，下面分析一下Jedis使用过程中常见的异常情况： 一.无法从连接池获取到连接JedisPool中的Jedis对象个数是有限的，默认是8个。这里假设使用的默认配置，如果有8个Jedis对象被占用，并且没有归还，如果调用者还要从JedisP">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Redis客户端常见异常分析 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Redis客户端常见异常分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-11-17T09:20:00+08:00" content="2016-11-17">
+              2016-11-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/11/17/Redis客户端常见异常分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/17/Redis客户端常见异常分析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/11/17/Redis客户端常见异常分析/" class="leancloud_visitors" data-flag-title="Redis客户端常见异常分析">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="本文部分内容来自《Redis开发与运维》一书，转载请声明。"><a href="#本文部分内容来自《Redis开发与运维》一书，转载请声明。" class="headerlink" title="本文部分内容来自《Redis开发与运维》一书，转载请声明。"></a>本文部分内容来自<a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external">《Redis开发与运维》</a>一书，转载请声明。</h3><p>在Redis客户端的使用过程中，无论是客户端使用不当或者Redis服务端出现问题，客户端会反应出一些异常，下面分析一下Jedis使用过程中常见的异常情况：</p>
+<h3 id="一-无法从连接池获取到连接"><a href="#一-无法从连接池获取到连接" class="headerlink" title="一.无法从连接池获取到连接"></a>一.无法从连接池获取到连接</h3><p>JedisPool中的Jedis对象个数是有限的，默认是8个。这里假设使用的默认配置，如果有8个Jedis对象被占用，并且没有归还，如果调用者还要从JedisPool中借用Jedis，就需要进行等待(例如设置了maxWaitMillis&gt;0)，如果在maxWaitMillis时间内仍然无法获取到Jedis对象就会抛出如下异常。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisConnectionException: Could not get a resource from the pool</div><div class="line">	…</div><div class="line">Caused by: java.util.NoSuchElementException: Timeout waiting for idle object</div><div class="line">	at org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:449)</div></pre></td></tr></table></figure>
+<p>还有一种情况，就是设置了blockWhenExhausted=false，那么调用者发现池子中没有资源时，会立即抛出异常不进行等待，下面的异常就是blockWhenExhausted=false时的效果。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisConnectionException: Could not get a resource from the pool</div><div class="line">	…</div><div class="line">Caused by: java.util.NoSuchElementException: Pool exhausted</div><div class="line">	at org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:464)</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>对于这个问题，需要重点讨论的是为什么连接池没有资源了，造成没有资源的可能的原因非常多</p>
+<ul>
+<li><p>1.客户端：高并发下连接池设置过小，出现供不应求，所以会出现上面的错误，但是正常情况下只要比默认的最大连接数(8个)多一些即可，因为正常情况下JedisPool以及Jedis的处理效率足够高。</p>
+</li>
+<li><p>2.客户端：没有正确使用连接池，比如没有进行释放，例如下面代码所示：<br>定义JedisPool，使用默认的连接池配置。</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();</div><div class="line">JedisPool jedisPool = new JedisPool(poolConfig, &quot;127.0.0.1&quot;, 6379);</div><div class="line">//向JedisPool借用8次连接，但是没有执行归还操作。</div><div class="line">for (int i = 0; i &lt; 8; i++) &#123;</div><div class="line">    Jedis jedis = null;</div><div class="line">    try &#123;</div><div class="line">	jedis = jedisPool.getResource();</div><div class="line">	jedis.ping();</div><div class="line">    &#125; catch (Exception e) &#123;</div><div class="line">	e.printStackTrace();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当调用者再向连接池借用Jedis时(如下操作)，就会抛出异常:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jedisPool.getResource().ping();</div></pre></td></tr></table></figure></p>
+<ul>
+<li>3.客户端：存在慢查询操作，这些慢查询持有的Jedis对象归还速度会比较慢，造成池子满了。</li>
+<li>4.服务端：客户端是正常的，但是Redis服务端由于一些原因造成了客户端命令执行过程的阻塞，也会使得客户端抛出这种异常。<br>可以看到造成这个异常的原因是多个方面的，不要被异常的表象所迷惑，而且并不存在万能钥匙能解决所有问题，开发和运维只能不断加强对于Redis的理解，顺藤摸瓜逐渐找到问题所在。</li>
+</ul>
+<h3 id="二、-客户端读写超时"><a href="#二、-客户端读写超时" class="headerlink" title="二、 客户端读写超时"></a>二、 客户端读写超时</h3><p>Jedis在调用Redis时，如果出现了读写超时后，会出现下面的异常：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisConnectionException: java.net.SocketTimeoutException: Read timed out</div></pre></td></tr></table></figure></p>
+<p>造成该异常的原因也有以下几种：</p>
+<ul>
+<li>读写超时设置的过短。</li>
+<li>命令本身就比较慢。</li>
+<li>客户端与服务端网络不正常。</li>
+<li>Redis自身发生阻塞。</li>
+</ul>
+<h3 id="三-客户端连接超时"><a href="#三-客户端连接超时" class="headerlink" title="三 客户端连接超时"></a>三 客户端连接超时</h3><p>Jedis在调用Redis时，如果出现了读写超时后，会出现下面的异常：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisConnectionException: java.net.SocketTimeoutException: connect timed out</div></pre></td></tr></table></figure></p>
+<p>造成该异常的原因也有以下几种：</p>
+<ul>
+<li>连接超时设置的过短。</li>
+<li>Redis发生阻塞，造成tcp-backlog已满，造成新的连接失败。</li>
+<li>客户端与服务端网络不正常。</li>
+</ul>
+<h3 id="四、客户端缓冲区异常"><a href="#四、客户端缓冲区异常" class="headerlink" title="四、客户端缓冲区异常"></a>四、客户端缓冲区异常</h3><p>Jedis在调用Redis时，如果出现客户端数据流异常，会出现下面的异常。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisConnectionException: Unexpected end of stream.</div></pre></td></tr></table></figure></p>
+<p>造成这个异常原因可能有如下几种：</p>
+<ul>
+<li>1.输出缓冲区满。例如将普通客户端的输出缓冲区设置为1M 1M 60：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">config set client-output-buffer-limit &quot;normal 1048576 1048576 60 slave 268435456 67108864 60 pubsub 33554432 8388608 60&quot;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>如果使用get命令获取一个bigkey(例如3M)，就会出现这个异常。</p>
+<ul>
+<li>2.长时间闲置连接被服务端主动断开，可以查询timeout配置的设置以及自身连接池配置是否需要做空闲检测。</li>
+<li>3.不正常并发读写：Jedis对象同时被多个线程并发操作，可能会出现上述异常。</li>
+</ul>
+<h3 id="五、Lua脚本正在执行"><a href="#五、Lua脚本正在执行" class="headerlink" title="五、Lua脚本正在执行"></a>五、Lua脚本正在执行</h3><p>如果Redis当前正在执行Lua脚本，并且超过了lua-time-limit，此时Jedis调用Redis时，会收到下面的异常。对于如何处理这类问题(Lua lua-time-limit配置之前章节已经介绍了)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisDataException: BUSY Redis is busy running a script. You can only call SCRIPT KILL or SHUTDOWN NOSAVE.</div></pre></td></tr></table></figure>
+<h3 id="六、Redis正在加载持久化文件"><a href="#六、Redis正在加载持久化文件" class="headerlink" title="六、Redis正在加载持久化文件"></a>六、Redis正在加载持久化文件</h3><p>Jedis调用Redis时，如果Redis正在加载持久化文件，那么会收到下面的异常。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisDataException: LOADING Redis is loading the dataset in memory</div></pre></td></tr></table></figure></p>
+<h3 id="七、Redis使用的内存超过maxmemory配置"><a href="#七、Redis使用的内存超过maxmemory配置" class="headerlink" title="七、Redis使用的内存超过maxmemory配置"></a>七、Redis使用的内存超过maxmemory配置</h3><p>Jedis调用Redis执行写操作时，如果Redis的使用内存大于maxmemory的设置，会收到下面的异常，此时应该调整maxmemory并找到造成内存增长的原因(maxmemory之前章节已经介绍了)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisDataException: OOM command not allowed when used memory &gt; &apos;maxmemory&apos;.</div></pre></td></tr></table></figure>
+<h3 id="八、客户端连接数过大"><a href="#八、客户端连接数过大" class="headerlink" title="八、客户端连接数过大"></a>八、客户端连接数过大</h3><p>如果客户端连接数超过了maxclients，新申请的连接就会出现如下异常：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis.clients.jedis.exceptions.JedisDataException: ERR max number of clients reached</div></pre></td></tr></table></figure></p>
+<p>此时新的客户端连接执行任何命令，返回结果都是如下： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">127.0.0.1:6379&gt; get hello</div><div class="line">(error) ERR max number of clients reached</div></pre></td></tr></table></figure>
+<p>这个问题可能会比较棘手，因为此时无法执行Redis命令，一般来说可以从两个方面进行着手。</p>
+<ul>
+<li><p>1.客户端：如果maxclients参数不是很小的话，应用方的客户端连接数基本不会超过maxclients，通常来看是由于应用方对于Redis客户端使用不当造成的。此时如果应用方是分布式结构的话，可以通过下线部分应用节点(例如占用连接较多的节点)，使得Redis的连接数先降下来。从而让绝大部分节点可以正常运行，此时在再通过查找程序bug或者调整maxclients进行问题的修复。</p>
+</li>
+<li><p>2.服务端：如果此时客户端无法处理，而当前Redis为高可用模式(例如Redis Sentinel和Redis Cluster)，可以考虑将当前Redis做故障转移。 </p>
+</li>
+</ul>
+<p>此问题不存在确定的解决方式，但是无论从哪个方面进行处理，故障的快速恢复极为重要，当然更为重要的是找到问题的所在，否则一段时间后客户端连接数依然会超过maxclients。</p>
+<h3 id="九、JedisCluster异常将在集群章节介绍。"><a href="#九、JedisCluster异常将在集群章节介绍。" class="headerlink" title="九、JedisCluster异常将在集群章节介绍。"></a>九、JedisCluster异常将在集群章节介绍。</h3><p>附赠GenericObjectPoolConfig的重要属性</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序号</th>
+<th style="text-align:center">参数名</th>
+<th style="text-align:center">含义</th>
+<th style="text-align:center">默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">maxActive</td>
+<td style="text-align:center">连接池中最大连接数</td>
+<td style="text-align:center">8</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">maxIdle</td>
+<td style="text-align:center">连接池中最大空闲的连接数</td>
+<td style="text-align:center">8</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">minIdle</td>
+<td style="text-align:center">连接池中最少空闲的连接数</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center">maxWaitMillis</td>
+<td style="text-align:center">当连接池资源用尽后，调用者的最大等待时间(单位为毫秒)，一般不建议使用默认值</td>
+<td style="text-align:center">-1：表示永远不超时，一直等。</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:center">jmxEnabled</td>
+<td style="text-align:center">是否开启jmx监控，如果应用开启了jmx端口并且jmxEnabled设置为true，就可以通过jconsole或者jvisualvm看到关于连接池的相关统计，有助于了解连接池的使用情况，并且可以针对其做监控统计</td>
+<td style="text-align:center">true</td>
+</tr>
+<tr>
+<td style="text-align:center">6</td>
+<td style="text-align:center">minEvictableIdleTimeMillis</td>
+<td style="text-align:center">连接的最小空闲时间，达到此值后空闲连接将被移除</td>
+<td style="text-align:center">30分钟</td>
+</tr>
+<tr>
+<td style="text-align:center">7</td>
+<td style="text-align:center">numTestsPerEvictionRun</td>
+<td style="text-align:center">做空闲连接检测时，每次的采样数</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">8</td>
+<td style="text-align:center">testOnBorrow</td>
+<td style="text-align:center">向连接池借用连接时是否做连接有效性检测(ping)，无效连接会被移除，每次借用多执行一次ping命令</td>
+<td style="text-align:center">false</td>
+</tr>
+<tr>
+<td style="text-align:center">9</td>
+<td style="text-align:center">testOnReturn</td>
+<td style="text-align:center">向连接池归还连接时是否做连接有效性检测(ping)，无效连接会被移除，每次归还多执行一次ping命令</td>
+<td style="text-align:center">false</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:center">testWhileIdle</td>
+<td style="text-align:center">向连接池借用连接时是否做连接空闲检测，空闲超时的连接会被移除</td>
+<td style="text-align:center">false</td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:center">timeBetweenEvictionRunsMillis</td>
+<td style="text-align:center">空闲连接的检测周期(单位为毫秒)</td>
+<td style="text-align:center">-1：表示不做检测</td>
+</tr>
+<tr>
+<td style="text-align:center">12</td>
+<td style="text-align:center">blockWhenExhausted</td>
+<td style="text-align:center">当连接池用尽后，调用者是否要等待，这个参数是和maxWaitMillis对应的，只有当此参数为true时，maxWaitMillis才会生效</td>
+<td style="text-align:center">true</td>
+</tr>
+</tbody>
+</table>
+<p>本文部分内容来自<a href="https://cachecloud.github.io/2016/10/24/Redis3%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5-%E7%9B%AE%E5%BD%95/" target="_blank" rel="external">《Redis开发与运维》</a>一书，转载请声明。</p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/03/Redis Cluster多机房高可用实现/" rel="next" title="Redis Cluster多机房高可用实现--基于客户端">
+                <i class="fa fa-chevron-left"></i> Redis Cluster多机房高可用实现--基于客户端
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/24/全量复制问题/" rel="prev" title="Redis无限全量复制问题分析与优化">
+                Redis无限全量复制问题分析与优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/11/17/Redis客户端常见异常分析/"
+           data-title="Redis客户端常见异常分析" data-url="http://yoursite.com/2016/11/17/Redis客户端常见异常分析/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#本文部分内容来自《Redis开发与运维》一书，转载请声明。"><span class="nav-number">1.</span> <span class="nav-text">本文部分内容来自《Redis开发与运维》一书，转载请声明。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一-无法从连接池获取到连接"><span class="nav-number">2.</span> <span class="nav-text">一.无法从连接池获取到连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、-客户端读写超时"><span class="nav-number">3.</span> <span class="nav-text">二、 客户端读写超时</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三-客户端连接超时"><span class="nav-number">4.</span> <span class="nav-text">三 客户端连接超时</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、客户端缓冲区异常"><span class="nav-number">5.</span> <span class="nav-text">四、客户端缓冲区异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、Lua脚本正在执行"><span class="nav-number">6.</span> <span class="nav-text">五、Lua脚本正在执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、Redis正在加载持久化文件"><span class="nav-number">7.</span> <span class="nav-text">六、Redis正在加载持久化文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#七、Redis使用的内存超过maxmemory配置"><span class="nav-number">8.</span> <span class="nav-text">七、Redis使用的内存超过maxmemory配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#八、客户端连接数过大"><span class="nav-number">9.</span> <span class="nav-text">八、客户端连接数过大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#九、JedisCluster异常将在集群章节介绍。"><span class="nav-number">10.</span> <span class="nav-text">九、JedisCluster异常将在集群章节介绍。</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

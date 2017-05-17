@@ -1,0 +1,783 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="废话少说，直接给配置，注意本文的ip是虚构的. 一. 拓扑一主一从，三个sentinel    角色 地址      master 10.10.xx.1:6379   slave 10.10.xx.2:6379   sentinel-1 10.10.xx.3:26379   sentinel-2 10.10.xx.4:26379   sentinel-3 10.10.xx.5:26379">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis 3.2.0-Sentinel故障转移测试">
+<meta property="og:url" content="http://yoursite.com/2016/03/11/Redis 3.2.0-Sentinel故障转移测试/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="废话少说，直接给配置，注意本文的ip是虚构的. 一. 拓扑一主一从，三个sentinel    角色 地址      master 10.10.xx.1:6379   slave 10.10.xx.2:6379   sentinel-1 10.10.xx.3:26379   sentinel-2 10.10.xx.4:26379   sentinel-3 10.10.xx.5:26379">
+<meta property="og:updated_time" content="2016-11-03T15:15:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis 3.2.0-Sentinel故障转移测试">
+<meta name="twitter:description" content="废话少说，直接给配置，注意本文的ip是虚构的. 一. 拓扑一主一从，三个sentinel    角色 地址      master 10.10.xx.1:6379   slave 10.10.xx.2:6379   sentinel-1 10.10.xx.3:26379   sentinel-2 10.10.xx.4:26379   sentinel-3 10.10.xx.5:26379">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Redis 3.2.0-Sentinel故障转移测试 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Redis 3.2.0-Sentinel故障转移测试
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-03-11T11:20:00+08:00" content="2016-03-11">
+              2016-03-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/03/11/Redis 3.2.0-Sentinel故障转移测试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/03/11/Redis 3.2.0-Sentinel故障转移测试/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/03/11/Redis 3.2.0-Sentinel故障转移测试/" class="leancloud_visitors" data-flag-title="Redis 3.2.0-Sentinel故障转移测试">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>废话少说，直接给配置，注意本文的ip是虚构的.</p>
+<h3 id="一-拓扑"><a href="#一-拓扑" class="headerlink" title="一. 拓扑"></a>一. 拓扑</h3><p>一主一从，三个sentinel</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>地址 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>master</td>
+<td>10.10.xx.1:6379</td>
+</tr>
+<tr>
+<td>slave</td>
+<td>10.10.xx.2:6379</td>
+</tr>
+<tr>
+<td>sentinel-1</td>
+<td>10.10.xx.3:26379</td>
+</tr>
+<tr>
+<td>sentinel-2</td>
+<td>10.10.xx.4:26379</td>
+</tr>
+<tr>
+<td>sentinel-3</td>
+<td>10.10.xx.5:26379</td>
+</tr>
+</tbody>
+</table>
+<a id="more"></a>
+<h3 id="二-配置"><a href="#二-配置" class="headerlink" title="二. 配置"></a>二. 配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">本文为了测试，只给出部分重点配置。</div></pre></td></tr></table></figure>
+<p>注意：Redis 3.2.0默认bind是127.0.0.1，并且开启保护模式，如果搭建sentinel、cluster应该进行修改。<br>有关保护模式：可以参考：<a href="http://carlosfu.iteye.com/blog/2303254" target="_blank" rel="external">http://carlosfu.iteye.com/blog/2303254</a></p>
+<h4 id="1-master-10-10-xx-1-6379"><a href="#1-master-10-10-xx-1-6379" class="headerlink" title="1. master(10.10.xx.1:6379)"></a>1. master(10.10.xx.1:6379)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">port 6379</div><div class="line">daemonize yes</div><div class="line">pidfile &quot;/var/run/redis-6379.pid&quot;</div><div class="line">logfile &quot;6379.log&quot;</div><div class="line">dbfilename &quot;dump-6379.rdb&quot;</div><div class="line">appendonly yes</div><div class="line">appendfilename &quot;appendonly-6379.aof&quot;</div><div class="line">dir &quot;/opt/soft/redis-3.2.0/data&quot;</div><div class="line">bind 0.0.0.0</div><div class="line">protected-mode no</div></pre></td></tr></table></figure>
+<h4 id="2-slave-10-10-xx-2-6379"><a href="#2-slave-10-10-xx-2-6379" class="headerlink" title="2. slave(10.10.xx.2:6379)"></a>2. slave(10.10.xx.2:6379)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">port 6379</div><div class="line">daemonize yes</div><div class="line">pidfile &quot;/var/run/redis-6379.pid&quot;</div><div class="line">logfile &quot;6379.log&quot;</div><div class="line">dbfilename &quot;dump-6379.rdb&quot;</div><div class="line">appendonly yes</div><div class="line">appendfilename &quot;appendonly-6379.aof&quot;</div><div class="line">dir &quot;/opt/soft/redis-3.2.0/data&quot;</div><div class="line">bind 0.0.0.0</div><div class="line">protected-mode no</div><div class="line">slaveof 10.10.xx.1 6379</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">三个sentinel的配置是一样的</div></pre></td></tr></table></figure>
+<h4 id="3-sentinel-1-10-10-xx-3-26379"><a href="#3-sentinel-1-10-10-xx-3-26379" class="headerlink" title="3. sentinel-1(10.10.xx.3:26379)"></a>3. sentinel-1(10.10.xx.3:26379)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">port 26379</div><div class="line">daemonize yes  </div><div class="line">pidfile /var/run/redis-26379.pid  </div><div class="line">logfile &quot;26379.log&quot;  </div><div class="line">dir /opt/soft/redis-3.2.0/data/    </div><div class="line">sentinel monitor mymaster 10.10.xx.1 6379 2   </div><div class="line">sentinel down-after-milliseconds mymaster 30000  </div><div class="line">sentinel parallel-syncs mymaster 1  </div><div class="line">sentinel failover-timeout mymaster 180000 </div><div class="line">bind 0.0.0.0</div><div class="line">protected-mode no</div></pre></td></tr></table></figure>
+<h4 id="4-sentinel-2-10-10-xx-4-26379"><a href="#4-sentinel-2-10-10-xx-4-26379" class="headerlink" title="4. sentinel-2(10.10.xx.4:26379)"></a>4. sentinel-2(10.10.xx.4:26379)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">port 26379</div><div class="line">daemonize yes  </div><div class="line">pidfile /var/run/redis-26379.pid  </div><div class="line">logfile &quot;26379.log&quot;  </div><div class="line">dir /opt/soft/redis-3.2.0/data/    </div><div class="line">sentinel monitor mymaster 10.10.xx.1 6379 2   </div><div class="line">sentinel down-after-milliseconds mymaster 30000  </div><div class="line">sentinel parallel-syncs mymaster 1  </div><div class="line">sentinel failover-timeout mymaster 180000 </div><div class="line">bind 0.0.0.0</div><div class="line">protected-mode no</div></pre></td></tr></table></figure>
+<h4 id="5-sentinel-3-10-10-xx-5-26379"><a href="#5-sentinel-3-10-10-xx-5-26379" class="headerlink" title="5. sentinel-3(10.10.xx.5:26379)"></a>5. sentinel-3(10.10.xx.5:26379)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">port 26379</div><div class="line">daemonize yes  </div><div class="line">pidfile /var/run/redis-26379.pid  </div><div class="line">logfile &quot;26379.log&quot;  </div><div class="line">dir /opt/soft/redis-3.2.0/data/    </div><div class="line">sentinel monitor mymaster 10.10.xx.1 6379 2   </div><div class="line">sentinel down-after-milliseconds mymaster 30000  </div><div class="line">sentinel parallel-syncs mymaster 1  </div><div class="line">sentinel failover-timeout mymaster 180000 </div><div class="line">bind 0.0.0.0</div><div class="line">protected-mode no</div></pre></td></tr></table></figure>
+<h3 id="三、启动"><a href="#三、启动" class="headerlink" title="三、启动"></a>三、启动</h3><p>1.启动master<br>2.启动slave<br>3.启动三个sentinel</p>
+<h3 id="四、模拟故障"><a href="#四、模拟故障" class="headerlink" title="四、模拟故障"></a>四、模拟故障</h3><p>1.在10.10.xx.1上，直接kill -9 ${master的pid}，观察一会，发现10.10.xx.2:6379变为master<br>2.重新启动源master(10.10.xx.1:6379),观察，它变为了10.10.xx.2:6379的slave。</p>
+<p>具体过程看一下日志，比较清楚</p>
+<h3 id="五、完整的日志"><a href="#五、完整的日志" class="headerlink" title="五、完整的日志"></a>五、完整的日志</h3><h4 id="1-master"><a href="#1-master" class="headerlink" title="1. master"></a>1. master</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line">                _._                                                  </div><div class="line">           _.-``__ &apos;&apos;-._                                             </div><div class="line">      _.-``    `.  `_.  &apos;&apos;-._           Redis 3.2.0 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/    _.,_ &apos;&apos;-._                                   </div><div class="line"> (    &apos;      ,       .-`  | `,    )     Running in standalone mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|     Port: 6379</div><div class="line"> |    `-._   `._    /     _.-&apos;    |     PID: 30853</div><div class="line">  `-._    `-._  `-./  _.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |           http://redis.io        </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |                                  </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line">      `-._    `-.__.-&apos;    _.-&apos;                                       </div><div class="line">          `-._        _.-&apos;                                           </div><div class="line">              `-.__.-&apos;                                               </div><div class="line"></div><div class="line">30853:M 14 Jun 16:56:34.335 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div><div class="line">30853:M 14 Jun 16:56:34.335 # Server started, Redis version 3.2.0</div><div class="line">30853:M 14 Jun 16:56:34.335 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &apos;vm.overcommit_memory = 1&apos; to /etc/sysctl.conf and then reboot or run the command &apos;sysctl vm.overcommit_memory=1&apos; for this to take effect.</div><div class="line">30853:M 14 Jun 16:56:34.335 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command &apos;echo never &gt; /sys/kernel/mm/transparent_hugepage/enabled&apos; as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.</div><div class="line">30853:M 14 Jun 16:56:34.335 * The server is now ready to accept connections on port 6379</div><div class="line">30853:M 14 Jun 16:59:14.397 * Slave 10.10.xx.2:6379 asks for synchronization</div><div class="line">30853:M 14 Jun 16:59:14.397 * Full resync requested by slave 10.10.xx.2:6379</div><div class="line">30853:M 14 Jun 16:59:14.397 * Starting BGSAVE for SYNC with target: disk</div><div class="line">30853:M 14 Jun 16:59:14.398 * Background saving started by pid 31065</div><div class="line">31065:C 14 Jun 16:59:14.399 * DB saved on disk</div><div class="line">31065:C 14 Jun 16:59:14.400 * RDB: 6 MB of memory used by copy-on-write</div><div class="line">30853:M 14 Jun 16:59:14.412 * Background saving terminated with success</div><div class="line">30853:M 14 Jun 16:59:14.413 * Synchronization with slave 10.10.xx.2:6379 succeeded</div><div class="line">                _._                                                  </div><div class="line">           _.-``__ &apos;&apos;-._                                             </div><div class="line">      _.-``    `.  `_.  &apos;&apos;-._           Redis 3.2.0 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/    _.,_ &apos;&apos;-._                                   </div><div class="line"> (    &apos;      ,       .-`  | `,    )     Running in standalone mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|     Port: 6379</div><div class="line"> |    `-._   `._    /     _.-&apos;    |     PID: 32387</div><div class="line">  `-._    `-._  `-./  _.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |           http://redis.io        </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |                                  </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line">      `-._    `-.__.-&apos;    _.-&apos;                                       </div><div class="line">          `-._        _.-&apos;                                           </div><div class="line">              `-.__.-&apos;                                               </div><div class="line"></div><div class="line">32387:M 14 Jun 17:12:40.086 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div><div class="line">32387:M 14 Jun 17:12:40.087 # Server started, Redis version 3.2.0</div><div class="line">32387:M 14 Jun 17:12:40.087 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &apos;vm.overcommit_memory = 1&apos; to /etc/sysctl.conf and then reboot or run the command &apos;sysctl vm.overcommit_memory=1&apos; for this to take effect.</div><div class="line">32387:M 14 Jun 17:12:40.087 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command &apos;echo never &gt; /sys/kernel/mm/transparent_hugepage/enabled&apos; as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.</div><div class="line">32387:M 14 Jun 17:12:40.087 * DB loaded from append only file: 0.000 seconds</div><div class="line">32387:M 14 Jun 17:12:40.087 * The server is now ready to accept connections on port 6379</div><div class="line">32387:S 14 Jun 17:12:50.337 * SLAVE OF 10.10.xx.2:6379 enabled (user request from &apos;id=2 addr=10.10.xx.3:33844 fd=6 name=sentinel-090610f6-cmd age=10 idle=0 flags=x db=0 sub=0 psub=0 multi=3 qbuf=0 qbuf-free=32768 obl=36 oll=0 omem=0 events=r cmd=exec&apos;)</div><div class="line">32387:S 14 Jun 17:12:50.337 # CONFIG REWRITE executed with success.</div><div class="line">32387:S 14 Jun 17:12:51.113 * Connecting to MASTER 10.10.xx.2:6379</div><div class="line">32387:S 14 Jun 17:12:51.114 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">32387:S 14 Jun 17:12:51.114 * Non blocking connect for SYNC fired the event.</div><div class="line">32387:S 14 Jun 17:12:51.114 * Master replied to PING, replication can continue...</div><div class="line">32387:S 14 Jun 17:12:51.115 * Partial resynchronization not possible (no cached master)</div><div class="line">32387:S 14 Jun 17:12:51.116 * Full resync from master: a4aeea7ef3dadfed876e6f6479a5394ba8e113e6:1</div><div class="line">32387:S 14 Jun 17:12:51.158 * MASTER &lt;-&gt; SLAVE sync: receiving 94 bytes from master</div><div class="line">32387:S 14 Jun 17:12:51.158 * MASTER &lt;-&gt; SLAVE sync: Flushing old data</div><div class="line">32387:S 14 Jun 17:12:51.158 * MASTER &lt;-&gt; SLAVE sync: Loading DB in memory</div><div class="line">32387:S 14 Jun 17:12:51.158 * MASTER &lt;-&gt; SLAVE sync: Finished with success</div><div class="line">32387:S 14 Jun 17:12:51.160 * Background append only file rewriting started by pid 32390</div><div class="line">32387:S 14 Jun 17:12:51.184 * AOF rewrite child asks to stop sending diffs.</div><div class="line">32390:C 14 Jun 17:12:51.185 * Parent agreed to stop sending diffs. Finalizing AOF...</div><div class="line">32390:C 14 Jun 17:12:51.185 * Concatenating 0.00 MB of AOF diff received from parent.</div><div class="line">32390:C 14 Jun 17:12:51.185 * SYNC append only file rewrite performed</div><div class="line">32390:C 14 Jun 17:12:51.186 * AOF rewrite: 6 MB of memory used by copy-on-write</div><div class="line">32387:S 14 Jun 17:12:51.214 * Background AOF rewrite terminated with success</div><div class="line">32387:S 14 Jun 17:12:51.214 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)</div><div class="line">32387:S 14 Jun 17:12:51.214 * Background AOF rewrite finished successfully</div></pre></td></tr></table></figure>
+<h4 id="2-slave"><a href="#2-slave" class="headerlink" title="2. slave"></a>2. slave</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div></pre></td><td class="code"><pre><div class="line">                _._                                                  </div><div class="line">           _.-``__ &apos;&apos;-._                                             </div><div class="line">      _.-``    `.  `_.  &apos;&apos;-._           Redis 3.2.0 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/    _.,_ &apos;&apos;-._                                   </div><div class="line"> (    &apos;      ,       .-`  | `,    )     Running in standalone mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|     Port: 6379</div><div class="line"> |    `-._   `._    /     _.-&apos;    |     PID: 13854</div><div class="line">  `-._    `-._  `-./  _.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |           http://redis.io        </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |                                  </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line">      `-._    `-.__.-&apos;    _.-&apos;                                       </div><div class="line">          `-._        _.-&apos;                                           </div><div class="line">              `-.__.-&apos;                                               </div><div class="line"></div><div class="line">13854:S 14 Jun 16:59:14.377 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div><div class="line">13854:S 14 Jun 16:59:14.377 # Server started, Redis version 3.2.0</div><div class="line">13854:S 14 Jun 16:59:14.377 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &apos;vm.overcommit_memory = 1&apos; to /etc/sysctl.conf and then reboot or run the command &apos;sysctl vm.overcommit_memory=1&apos; for this to take effect.</div><div class="line">13854:S 14 Jun 16:59:14.377 * The server is now ready to accept connections on port 6379</div><div class="line">13854:S 14 Jun 16:59:14.377 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 16:59:14.377 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 16:59:14.378 * Non blocking connect for SYNC fired the event.</div><div class="line">13854:S 14 Jun 16:59:14.378 * Master replied to PING, replication can continue...</div><div class="line">13854:S 14 Jun 16:59:14.378 * Partial resynchronization not possible (no cached master)</div><div class="line">13854:S 14 Jun 16:59:14.381 * Full resync from master: 6aeb689f547f20db04b3fa7ad2fa36d56dd32098:1</div><div class="line">13854:S 14 Jun 16:59:14.395 * MASTER &lt;-&gt; SLAVE sync: receiving 76 bytes from master</div><div class="line">13854:S 14 Jun 16:59:14.395 * MASTER &lt;-&gt; SLAVE sync: Flushing old data</div><div class="line">13854:S 14 Jun 16:59:14.395 * MASTER &lt;-&gt; SLAVE sync: Loading DB in memory</div><div class="line">13854:S 14 Jun 16:59:14.395 * MASTER &lt;-&gt; SLAVE sync: Finished with success</div><div class="line">13854:S 14 Jun 16:59:14.396 * Background append only file rewriting started by pid 13857</div><div class="line">13854:S 14 Jun 16:59:14.419 * AOF rewrite child asks to stop sending diffs.</div><div class="line">13857:C 14 Jun 16:59:14.419 * Parent agreed to stop sending diffs. Finalizing AOF...</div><div class="line">13857:C 14 Jun 16:59:14.419 * Concatenating 0.00 MB of AOF diff received from parent.</div><div class="line">13857:C 14 Jun 16:59:14.419 * SYNC append only file rewrite performed</div><div class="line">13857:C 14 Jun 16:59:14.420 * AOF rewrite: 6 MB of memory used by copy-on-write</div><div class="line">13854:S 14 Jun 16:59:14.477 * Background AOF rewrite terminated with success</div><div class="line">13854:S 14 Jun 16:59:14.477 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)</div><div class="line">13854:S 14 Jun 16:59:14.477 * Background AOF rewrite finished successfully</div><div class="line">13854:S 14 Jun 17:11:34.635 # Connection with master lost.</div><div class="line">13854:S 14 Jun 17:11:34.635 * Caching the disconnected master state.</div><div class="line">13854:S 14 Jun 17:11:34.686 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:34.686 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:34.686 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:35.687 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:35.688 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:35.688 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:36.690 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:36.690 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:36.690 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:37.692 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:37.692 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:37.692 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:38.693 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:38.693 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:38.693 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:39.695 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:39.696 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:39.696 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:40.698 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:40.699 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:40.699 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:41.700 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:41.700 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:41.700 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:42.702 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:42.702 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:42.702 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:43.703 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:43.703 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:43.703 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:44.705 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:44.705 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:44.705 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:45.707 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:45.707 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:45.708 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:46.708 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:46.708 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:46.708 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:47.711 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:47.711 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:47.712 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:48.713 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:48.713 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:48.713 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:49.716 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:49.716 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:49.716 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:50.717 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:50.717 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:50.717 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:51.718 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:51.718 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:51.719 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:52.720 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:52.720 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:52.720 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:53.722 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:53.722 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:53.722 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:54.724 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:54.724 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:54.725 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:55.726 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:55.726 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:55.726 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:56.729 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:56.729 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:56.729 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:57.731 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:57.731 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:57.731 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:58.734 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:58.735 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:58.735 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:11:59.738 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:11:59.738 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:11:59.738 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:12:00.739 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:12:00.740 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:12:00.740 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:12:01.740 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:12:01.740 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:12:01.740 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:12:02.741 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:12:02.741 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:12:02.741 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:12:03.742 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:12:03.742 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:12:03.743 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:12:04.744 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:12:04.744 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:12:04.744 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:S 14 Jun 17:12:05.746 * Connecting to MASTER 10.10.xx.1:6379</div><div class="line">13854:S 14 Jun 17:12:05.746 * MASTER &lt;-&gt; SLAVE sync started</div><div class="line">13854:S 14 Jun 17:12:05.746 # Error condition on socket for SYNC: Connection refused</div><div class="line">13854:M 14 Jun 17:12:05.883 * Discarding previously cached master state.</div><div class="line">13854:M 14 Jun 17:12:05.883 * MASTER MODE enabled (user request from &apos;id=6 addr=10.10.xx.4:56314 fd=9 name=sentinel-92aed965-cmd age=257 idle=0 flags=x db=0 sub=0 psub=0 multi=3 qbuf=14 qbuf-free=32754 obl=36 oll=0 omem=0 events=r cmd=exec&apos;)</div><div class="line">13854:M 14 Jun 17:12:05.883 # CONFIG REWRITE executed with success.</div><div class="line">13854:M 14 Jun 17:12:51.082 * Slave 10.10.xx.1:6379 asks for synchronization</div><div class="line">13854:M 14 Jun 17:12:51.082 * Full resync requested by slave 10.10.xx.1:6379</div><div class="line">13854:M 14 Jun 17:12:51.082 * Starting BGSAVE for SYNC with target: disk</div><div class="line">13854:M 14 Jun 17:12:51.083 * Background saving started by pid 15544</div><div class="line">15544:C 14 Jun 17:12:51.084 * DB saved on disk</div><div class="line">15544:C 14 Jun 17:12:51.084 * RDB: 6 MB of memory used by copy-on-write</div><div class="line">13854:M 14 Jun 17:12:51.125 * Background saving terminated with success</div><div class="line">13854:M 14 Jun 17:12:51.125 * Synchronization with slave 10.10.xx.1:6379 succeeded</div></pre></td></tr></table></figure>
+<h4 id="3-sentinel-1"><a href="#3-sentinel-1" class="headerlink" title="3. sentinel-1"></a>3. sentinel-1</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">                _._                                                  </div><div class="line">           _.-``__ &apos;&apos;-._                                             </div><div class="line">      _.-``    `.  `_.  &apos;&apos;-._           Redis 3.2.0 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/    _.,_ &apos;&apos;-._                                   </div><div class="line"> (    &apos;      ,       .-`  | `,    )     Running in sentinel mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|     Port: 26379</div><div class="line"> |    `-._   `._    /     _.-&apos;    |     PID: 12259</div><div class="line">  `-._    `-._  `-./  _.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |           http://redis.io        </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |                                  </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line">      `-._    `-.__.-&apos;    _.-&apos;                                       </div><div class="line">          `-._        _.-&apos;                                           </div><div class="line">              `-.__.-&apos;                                               </div><div class="line"></div><div class="line">12259:X 14 Jun 17:05:04.278 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div><div class="line">12259:X 14 Jun 17:05:04.281 # Sentinel ID is 090610f6b1d240d4e9ae3b83e12a35225e513214</div><div class="line">12259:X 14 Jun 17:05:04.282 # +monitor master mymaster 10.10.xx.1 6379 quorum 2</div><div class="line">12259:X 14 Jun 17:05:04.283 * +slave slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">12259:X 14 Jun 17:07:50.891 * +sentinel sentinel 92aed96581eb5356b01901870d6cb5d8fcacdb29 10.10.xx.4 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">12259:X 14 Jun 17:09:44.208 * +sentinel sentinel 349f4052eae26b0f81e0edd823df5b8d095ec239 10.10.xx.5 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">12259:X 14 Jun 17:12:04.665 # +sdown master mymaster 10.10.xx.1 6379</div><div class="line">12259:X 14 Jun 17:12:04.765 # +new-epoch 1</div><div class="line">12259:X 14 Jun 17:12:04.768 # +vote-for-leader 92aed96581eb5356b01901870d6cb5d8fcacdb29 1</div><div class="line">12259:X 14 Jun 17:12:05.774 # +odown master mymaster 10.10.xx.1 6379 #quorum 3/2</div><div class="line">12259:X 14 Jun 17:12:05.774 # Next failover delay: I will not start a failover before Tue Jun 14 17:18:05 2016</div><div class="line">12259:X 14 Jun 17:12:07.930 # -odown master mymaster 10.10.xx.1 6379</div><div class="line">12259:X 14 Jun 17:12:07.939 # +config-update-from sentinel 349f4052eae26b0f81e0edd823df5b8d095ec239 10.10.xx.5 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">12259:X 14 Jun 17:12:07.939 # +switch-master mymaster 10.10.xx.1 6379 10.10.xx.2 6379</div><div class="line">12259:X 14 Jun 17:12:07.940 * +slave slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">12259:X 14 Jun 17:12:37.971 # +sdown slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">12259:X 14 Jun 17:12:40.297 # -sdown slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">12259:X 14 Jun 17:12:50.293 * +convert-to-slave slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div></pre></td></tr></table></figure>
+<h4 id="4-sentinel-2"><a href="#4-sentinel-2" class="headerlink" title="4. sentinel-2"></a>4. sentinel-2</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line">                _._                                                  </div><div class="line">           _.-``__ &apos;&apos;-._                                             </div><div class="line">      _.-``    `.  `_.  &apos;&apos;-._           Redis 3.2.0 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/    _.,_ &apos;&apos;-._                                   </div><div class="line"> (    &apos;      ,       .-`  | `,    )     Running in sentinel mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|     Port: 26379</div><div class="line"> |    `-._   `._    /     _.-&apos;    |     PID: 29115</div><div class="line">  `-._    `-._  `-./  _.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |           http://redis.io        </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |                                  </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line">      `-._    `-.__.-&apos;    _.-&apos;                                       </div><div class="line">          `-._        _.-&apos;                                           </div><div class="line">              `-.__.-&apos;                                               </div><div class="line"></div><div class="line">29115:X 14 Jun 17:07:48.865 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div><div class="line">29115:X 14 Jun 17:07:48.876 # Sentinel ID is 92aed96581eb5356b01901870d6cb5d8fcacdb29</div><div class="line">29115:X 14 Jun 17:07:48.876 # +monitor master mymaster 10.10.xx.1 6379 quorum 2</div><div class="line">29115:X 14 Jun 17:07:48.878 * +slave slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:07:49.188 * +sentinel sentinel 090610f6b1d240d4e9ae3b83e12a35225e513214 10.10.xx.3 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:09:44.204 * +sentinel sentinel 349f4052eae26b0f81e0edd823df5b8d095ec239 10.10.xx.5 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:04.685 # +sdown master mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:04.756 # +odown master mymaster 10.10.xx.1 6379 #quorum 2/2</div><div class="line">29115:X 14 Jun 17:12:04.756 # +new-epoch 1</div><div class="line">29115:X 14 Jun 17:12:04.756 # +try-failover master mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:04.759 # +vote-for-leader 92aed96581eb5356b01901870d6cb5d8fcacdb29 1</div><div class="line">29115:X 14 Jun 17:12:04.763 # 349f4052eae26b0f81e0edd823df5b8d095ec239 voted for 92aed96581eb5356b01901870d6cb5d8fcacdb29 1</div><div class="line">29115:X 14 Jun 17:12:04.765 # 090610f6b1d240d4e9ae3b83e12a35225e513214 voted for 92aed96581eb5356b01901870d6cb5d8fcacdb29 1</div><div class="line">29115:X 14 Jun 17:12:04.826 # +elected-leader master mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:04.826 # +failover-state-select-slave master mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:04.897 # +selected-slave slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:04.897 * +failover-state-send-slaveof-noone slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:05.870 * +failover-state-wait-promotion slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:06.828 # +promoted-slave slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:06.829 # +failover-state-reconf-slaves master mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:06.877 # +failover-end master mymaster 10.10.xx.1 6379</div><div class="line">29115:X 14 Jun 17:12:06.877 # +switch-master mymaster 10.10.xx.1 6379 10.10.xx.2 6379</div><div class="line">29115:X 14 Jun 17:12:06.878 * +slave slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">29115:X 14 Jun 17:12:36.948 # +sdown slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">29115:X 14 Jun 17:12:41.114 # -sdown slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div></pre></td></tr></table></figure>
+<h4 id="5-sentinel-3"><a href="#5-sentinel-3" class="headerlink" title="5. sentinel-3"></a>5. sentinel-3</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">                _._                                                  </div><div class="line">           _.-``__ &apos;&apos;-._                                             </div><div class="line">      _.-``    `.  `_.  &apos;&apos;-._           Redis 3.2.0 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/    _.,_ &apos;&apos;-._                                   </div><div class="line"> (    &apos;      ,       .-`  | `,    )     Running in sentinel mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|     Port: 26379</div><div class="line"> |    `-._   `._    /     _.-&apos;    |     PID: 8413</div><div class="line">  `-._    `-._  `-./  _.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |           http://redis.io        </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line"> |`-._`-._    `-.__.-&apos;    _.-&apos;_.-&apos;|                                  </div><div class="line"> |    `-._`-._        _.-&apos;_.-&apos;    |                                  </div><div class="line">  `-._    `-._`-.__.-&apos;_.-&apos;    _.-&apos;                                   </div><div class="line">      `-._    `-.__.-&apos;    _.-&apos;                                       </div><div class="line">          `-._        _.-&apos;                                           </div><div class="line">              `-.__.-&apos;                                               </div><div class="line"></div><div class="line">8413:X 14 Jun 17:09:42.233 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.</div><div class="line">8413:X 14 Jun 17:09:42.241 # Sentinel ID is 349f4052eae26b0f81e0edd823df5b8d095ec239</div><div class="line">8413:X 14 Jun 17:09:42.241 # +monitor master mymaster 10.10.xx.1 6379 quorum 2</div><div class="line">8413:X 14 Jun 17:09:42.244 * +slave slave 10.10.xx.2:6379 10.10.xx.2 6379 @ mymaster 10.10.xx.1 6379</div><div class="line">8413:X 14 Jun 17:09:43.456 * +sentinel sentinel 090610f6b1d240d4e9ae3b83e12a35225e513214 10.10.xx.3 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">8413:X 14 Jun 17:09:43.867 * +sentinel sentinel 92aed96581eb5356b01901870d6cb5d8fcacdb29 10.10.xx.4 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">8413:X 14 Jun 17:12:04.826 # +sdown master mymaster 10.10.xx.1 6379</div><div class="line">8413:X 14 Jun 17:12:04.835 # +new-epoch 1</div><div class="line">8413:X 14 Jun 17:12:04.836 # +vote-for-leader 92aed96581eb5356b01901870d6cb5d8fcacdb29 1</div><div class="line">8413:X 14 Jun 17:12:04.909 # +odown master mymaster 10.10.xx.1 6379 #quorum 3/2</div><div class="line">8413:X 14 Jun 17:12:04.909 # Next failover delay: I will not start a failover before Tue Jun 14 17:18:04 2016</div><div class="line">8413:X 14 Jun 17:12:07.025 # +config-update-from sentinel 92aed96581eb5356b01901870d6cb5d8fcacdb29 10.10.xx.4 26379 @ mymaster 10.10.xx.1 6379</div><div class="line">8413:X 14 Jun 17:12:07.026 # +switch-master mymaster 10.10.xx.1 6379 10.10.xx.2 6379</div><div class="line">8413:X 14 Jun 17:12:07.026 * +slave slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">8413:X 14 Jun 17:12:37.032 # +sdown slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div><div class="line">8413:X 14 Jun 17:12:41.054 # -sdown slave 10.10.xx.1:6379 10.10.xx.1 6379 @ mymaster 10.10.xx.2 6379</div></pre></td></tr></table></figure>
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/12/CacheCloud文档归档/" rel="prev" title="CacheCloud-资源归档">
+                CacheCloud-资源归档 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/03/11/Redis 3.2.0-Sentinel故障转移测试/"
+           data-title="Redis 3.2.0-Sentinel故障转移测试" data-url="http://yoursite.com/2016/03/11/Redis 3.2.0-Sentinel故障转移测试/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-拓扑"><span class="nav-number">1.</span> <span class="nav-text">一. 拓扑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二-配置"><span class="nav-number">2.</span> <span class="nav-text">二. 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-master-10-10-xx-1-6379"><span class="nav-number">2.1.</span> <span class="nav-text">1. master(10.10.xx.1:6379)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-slave-10-10-xx-2-6379"><span class="nav-number">2.2.</span> <span class="nav-text">2. slave(10.10.xx.2:6379)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-sentinel-1-10-10-xx-3-26379"><span class="nav-number">2.3.</span> <span class="nav-text">3. sentinel-1(10.10.xx.3:26379)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-sentinel-2-10-10-xx-4-26379"><span class="nav-number">2.4.</span> <span class="nav-text">4. sentinel-2(10.10.xx.4:26379)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-sentinel-3-10-10-xx-5-26379"><span class="nav-number">2.5.</span> <span class="nav-text">5. sentinel-3(10.10.xx.5:26379)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、启动"><span class="nav-number">3.</span> <span class="nav-text">三、启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、模拟故障"><span class="nav-number">4.</span> <span class="nav-text">四、模拟故障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、完整的日志"><span class="nav-number">5.</span> <span class="nav-text">五、完整的日志</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-master"><span class="nav-number">5.1.</span> <span class="nav-text">1. master</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-slave"><span class="nav-number">5.2.</span> <span class="nav-text">2. slave</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-sentinel-1"><span class="nav-number">5.3.</span> <span class="nav-text">3. sentinel-1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-sentinel-2"><span class="nav-number">5.4.</span> <span class="nav-text">4. sentinel-2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-sentinel-3"><span class="nav-number">5.5.</span> <span class="nav-text">5. sentinel-3</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

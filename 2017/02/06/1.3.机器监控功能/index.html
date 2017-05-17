@@ -1,0 +1,773 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="CacheCloud将在1.3版本添加机器监控统计功能，目前已经在master分支提交了部分代码，如果需要使用还要做部分源码改动(去掉某些注释~哈哈) 1ps: 目前该功能只对master分支有效。 一. 功能展示CacheCloud会每5分钟收集机器的相关指标，例如CPU、内存、负载、网络、磁盘等绘制成报表，例如下面分别是从全局、CPU、内存、磁盘展示： 1.全局">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CacheCloud 1.3-机器监控功能">
+<meta property="og:url" content="http://yoursite.com/2017/02/06/1.3.机器监控功能/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="CacheCloud将在1.3版本添加机器监控统计功能，目前已经在master分支提交了部分代码，如果需要使用还要做部分源码改动(去掉某些注释~哈哈) 1ps: 目前该功能只对master分支有效。 一. 功能展示CacheCloud会每5分钟收集机器的相关指标，例如CPU、内存、负载、网络、磁盘等绘制成报表，例如下面分别是从全局、CPU、内存、磁盘展示： 1.全局">
+<meta property="og:image" content="http://i2.itc.cn/20170206/3084_2b7e85f9_6524_fc06_14c8_eb929fc5f28b_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20170206/3084_3cdea984_0e84_29e3_d442_7bcbff978069_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20170206/3084_56ee0dad_e7f7_890a_8537_babe75ad24f4_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170206/3084_acf665c5_d939_1a85_836a_02479e513c48_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170206/3084_e74c4cae_73c4_fc9e_ed05_6adfd1551769_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20170206/3084_e945f853_78ac_e81f_8cd3_1602d0a82986_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20170206/3084_c5b40ac6_0920_c560_9700_e5b9b647da3f_1.png">
+<meta property="og:updated_time" content="2017-02-06T06:49:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CacheCloud 1.3-机器监控功能">
+<meta name="twitter:description" content="CacheCloud将在1.3版本添加机器监控统计功能，目前已经在master分支提交了部分代码，如果需要使用还要做部分源码改动(去掉某些注释~哈哈) 1ps: 目前该功能只对master分支有效。 一. 功能展示CacheCloud会每5分钟收集机器的相关指标，例如CPU、内存、负载、网络、磁盘等绘制成报表，例如下面分别是从全局、CPU、内存、磁盘展示： 1.全局">
+<meta name="twitter:image" content="http://i2.itc.cn/20170206/3084_2b7e85f9_6524_fc06_14c8_eb929fc5f28b_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> CacheCloud 1.3-机器监控功能 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                CacheCloud 1.3-机器监控功能
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-06T15:00:00+08:00" content="2017-02-06">
+              2017-02-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/02/06/1.3.机器监控功能/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/06/1.3.机器监控功能/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/02/06/1.3.机器监控功能/" class="leancloud_visitors" data-flag-title="CacheCloud 1.3-机器监控功能">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>CacheCloud将在1.3版本添加机器监控统计功能，目前已经在master分支提交了部分代码，如果需要使用还要做部分源码改动(去掉某些注释~哈哈)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ps: 目前该功能只对master分支有效。</div></pre></td></tr></table></figure>
+<h3 id="一-功能展示"><a href="#一-功能展示" class="headerlink" title="一. 功能展示"></a>一. 功能展示</h3><p>CacheCloud会每5分钟收集机器的相关指标，例如CPU、内存、负载、网络、磁盘等绘制成报表，例如下面分别是从全局、CPU、内存、磁盘展示：</p>
+<h4 id="1-全局"><a href="#1-全局" class="headerlink" title="1.全局"></a>1.全局</h4><p><img src="http://i2.itc.cn/20170206/3084_2b7e85f9_6524_fc06_14c8_eb929fc5f28b_1.png" alt=""></p>
+<a id="more"></a>
+<h4 id="2-CPU"><a href="#2-CPU" class="headerlink" title="2.CPU"></a>2.CPU</h4><p><img src="http://i2.itc.cn/20170206/3084_3cdea984_0e84_29e3_d442_7bcbff978069_1.png" alt=""></p>
+<h4 id="3-网络"><a href="#3-网络" class="headerlink" title="3.网络"></a>3.网络</h4><p><img src="http://i0.itc.cn/20170206/3084_56ee0dad_e7f7_890a_8537_babe75ad24f4_1.png" alt=""></p>
+<h4 id="4-硬盘"><a href="#4-硬盘" class="headerlink" title="4.硬盘"></a>4.硬盘</h4><p><img src="http://i1.itc.cn/20170206/3084_acf665c5_d939_1a85_836a_02479e513c48_1.png" alt=""></p>
+<p>这些报表的作用无需多说，后期会添加相应的报警功能。</p>
+<h3 id="二-入口"><a href="#二-入口" class="headerlink" title="二. 入口"></a>二. 入口</h3><ol>
+<li>管理后台：机器管理列表有有个监控按钮。<br><img src="http://i1.itc.cn/20170206/3084_e74c4cae_73c4_fc9e_ed05_6adfd1551769_1.png" alt=""></li>
+</ol>
+<ol>
+<li>用户端：实例列表点击机器的IP地址。<br><img src="http://i3.itc.cn/20170206/3084_e945f853_78ac_e81f_8cd3_1602d0a82986_1.png" alt=""></li>
+</ol>
+<h3 id="三-使用方法"><a href="#三-使用方法" class="headerlink" title="三. 使用方法"></a>三. 使用方法</h3><h4 id="1-将cachecloud-open-web-nmon放到和cachecloud部署的同级目录，例如下面所示。"><a href="#1-将cachecloud-open-web-nmon放到和cachecloud部署的同级目录，例如下面所示。" class="headerlink" title="1. 将cachecloud-open-web/nmon放到和cachecloud部署的同级目录，例如下面所示。"></a>1. 将cachecloud-open-web/nmon放到和cachecloud部署的同级目录，例如下面所示。</h4><p><img src="http://i1.itc.cn/20170206/3084_c5b40ac6_0920_c560_9700_e5b9b647da3f_1.png" alt=""></p>
+<h4 id="2-去掉注释代码"><a href="#2-去掉注释代码" class="headerlink" title="2. 去掉注释代码"></a>2. 去掉注释代码</h4><p>去掉com.sohu.cache.schedule.jobs.ServerJob的注释。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">package com.sohu.cache.schedule.jobs;</div><div class="line"></div><div class="line">import org.quartz.JobDataMap;</div><div class="line">import org.quartz.JobExecutionContext;</div><div class="line">import org.quartz.SchedulerContext;</div><div class="line">import org.quartz.SchedulerException;</div><div class="line">import org.springframework.context.ApplicationContext;</div><div class="line"></div><div class="line">import com.sohu.cache.server.ServerStatusCollector;</div><div class="line">import com.sohu.cache.util.ConstUtils;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 基于服务器的job</div><div class="line"> */</div><div class="line">public class ServerJob extends CacheBaseJob &#123;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void action(JobExecutionContext context) &#123;</div><div class="line">        try &#123;</div><div class="line">            JobDataMap dataMap =  context.getMergedJobDataMap();</div><div class="line">            SchedulerContext schedulerContext = context.getScheduler().getContext();</div><div class="line">            ApplicationContext applicationContext = (ApplicationContext)schedulerContext.get(APPLICATION_CONTEXT_KEY);</div><div class="line">            ServerStatusCollector serverStatusCollector = applicationContext.getBean(&quot;serverStatusCollector&quot;, ServerStatusCollector.class);</div><div class="line">            String ip = dataMap.getString(ConstUtils.HOST_KEY);</div><div class="line">            serverStatusCollector.fetchServerStatus(ip);</div><div class="line">        &#125; catch (SchedulerException e) &#123;</div><div class="line">            logger.error(e.getMessage(), e);</div><div class="line">        &#125; catch (Exception e) &#123;</div><div class="line">            logger.error(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="3-可能要修改数据库"><a href="#3-可能要修改数据库" class="headerlink" title="3. 可能要修改数据库"></a>3. 可能要修改数据库</h4><p>默认machine_info的collect字段为1（表示会收集机器信息），如果不是请自行修改：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">update machine_info set collect=1;</div></pre></td></tr></table></figure></p>
+<h4 id="4-重启cachecloud"><a href="#4-重启cachecloud" class="headerlink" title="4. 重启cachecloud"></a>4. 重启cachecloud</h4><h3 id="四-可能产生的问题"><a href="#四-可能产生的问题" class="headerlink" title="四.可能产生的问题"></a>四.可能产生的问题</h3><ol>
+<li><p>cachecloud在第一次收集机器的统计信息时，会打印一些异常日志，这是正常现象，可以忽略。</p>
+</li>
+<li><p>cachecloud使用nmon实现对Linux各种发行版的兼容，也不能排除有些特殊类型，如果有异常可以进群讨论。<br>(QQ群：534429768)</p>
+</li>
+<li><p>没有统计：检查collect字段是否为1，quartz job是否启动等等。</p>
+</li>
+</ol>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/24/全量复制问题/" rel="next" title="Redis无限全量复制问题分析与优化">
+                <i class="fa fa-chevron-left"></i> Redis无限全量复制问题分析与优化
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/16/Redis的Linux系统优化/" rel="prev" title="Redis的Linux系统优化">
+                Redis的Linux系统优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/02/06/1.3.机器监控功能/"
+           data-title="CacheCloud 1.3-机器监控功能" data-url="http://yoursite.com/2017/02/06/1.3.机器监控功能/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-功能展示"><span class="nav-number">1.</span> <span class="nav-text">一. 功能展示</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-全局"><span class="nav-number">1.1.</span> <span class="nav-text">1.全局</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-CPU"><span class="nav-number">1.2.</span> <span class="nav-text">2.CPU</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-网络"><span class="nav-number">1.3.</span> <span class="nav-text">3.网络</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-硬盘"><span class="nav-number">1.4.</span> <span class="nav-text">4.硬盘</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二-入口"><span class="nav-number">2.</span> <span class="nav-text">二. 入口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三-使用方法"><span class="nav-number">3.</span> <span class="nav-text">三. 使用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-将cachecloud-open-web-nmon放到和cachecloud部署的同级目录，例如下面所示。"><span class="nav-number">3.1.</span> <span class="nav-text">1. 将cachecloud-open-web/nmon放到和cachecloud部署的同级目录，例如下面所示。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-去掉注释代码"><span class="nav-number">3.2.</span> <span class="nav-text">2. 去掉注释代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-可能要修改数据库"><span class="nav-number">3.3.</span> <span class="nav-text">3. 可能要修改数据库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-重启cachecloud"><span class="nav-number">3.4.</span> <span class="nav-text">4. 重启cachecloud</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四-可能产生的问题"><span class="nav-number">4.</span> <span class="nav-text">四.可能产生的问题</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

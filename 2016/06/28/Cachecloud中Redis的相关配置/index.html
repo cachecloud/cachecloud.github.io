@@ -1,0 +1,1039 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="一、Redis配置在哪？CacheCloud将Redis配置定义成枚举类(考虑到对于Java不太了解的朋友，后期会定义成可配置的模板)。  Redis普通节点配置：普通的数据节点配置 1cachecloud-open-web\src\main\java\com\sohu\cache\redis\enums\RedisConfigEnum.java  Redis Sentinel节点配置： Sent">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cachecloud中Redis的相关配置">
+<meta property="og:url" content="http://yoursite.com/2016/06/28/Cachecloud中Redis的相关配置/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="一、Redis配置在哪？CacheCloud将Redis配置定义成枚举类(考虑到对于Java不太了解的朋友，后期会定义成可配置的模板)。  Redis普通节点配置：普通的数据节点配置 1cachecloud-open-web\src\main\java\com\sohu\cache\redis\enums\RedisConfigEnum.java  Redis Sentinel节点配置： Sent">
+<meta property="og:updated_time" content="2016-11-04T00:57:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cachecloud中Redis的相关配置">
+<meta name="twitter:description" content="一、Redis配置在哪？CacheCloud将Redis配置定义成枚举类(考虑到对于Java不太了解的朋友，后期会定义成可配置的模板)。  Redis普通节点配置：普通的数据节点配置 1cachecloud-open-web\src\main\java\com\sohu\cache\redis\enums\RedisConfigEnum.java  Redis Sentinel节点配置： Sent">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Cachecloud中Redis的相关配置 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Cachecloud中Redis的相关配置
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-28T11:20:00+08:00" content="2016-06-28">
+              2016-06-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/06/28/Cachecloud中Redis的相关配置/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/28/Cachecloud中Redis的相关配置/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/06/28/Cachecloud中Redis的相关配置/" class="leancloud_visitors" data-flag-title="Cachecloud中Redis的相关配置">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、Redis配置在哪？"><a href="#一、Redis配置在哪？" class="headerlink" title="一、Redis配置在哪？"></a>一、Redis配置在哪？</h3><p>CacheCloud将Redis配置定义成枚举类(考虑到对于Java不太了解的朋友，后期会定义成可配置的模板)。</p>
+<ol>
+<li><p>Redis普通节点配置：普通的数据节点配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cachecloud-open-web\src\main\java\com\sohu\cache\redis\enums\RedisConfigEnum.java</div></pre></td></tr></table></figure>
+</li>
+<li><p>Redis Sentinel节点配置： Sentinel节点自身的特殊配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cachecloud-open-web\src\main\java\com\sohu\cache\redis\enums\RedisSentinelConfigEnum</div></pre></td></tr></table></figure>
+</li>
+<li><p>Redis Cluster节点配置： 在Redis普通节点上添加了一些关于Redis Cluster的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cachecloud-open-web\src\main\java\com\sohu\cache\redis\enums\RedisClusterConfigEnum</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<a id="more"></a>
+<h3 id="二、配置”优化”"><a href="#二、配置”优化”" class="headerlink" title="二、配置”优化”"></a>二、配置”优化”</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Cachecloud Release1.0 1.1 master</div><div class="line">Redis 3.0.7</div></pre></td></tr></table></figure>
+<p>我们以Redis3.0.7为例子，<a href="http://download.redis.io/releases/redis-3.0.7.tar.gz" target="_blank" rel="external">http://download.redis.io/releases/redis-3.0.7.tar.gz</a></p>
+<h4 id="1-Redis普通节点与标准配置的不同"><a href="#1-Redis普通节点与标准配置的不同" class="headerlink" title="1. Redis普通节点与标准配置的不同"></a>1. Redis普通节点与标准配置的不同</h4><p>解压后默认配置是redis.conf文件（去掉注释和空行）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">daemonize no</div><div class="line">pidfile /var/run/redis.pid</div><div class="line">port 6379</div><div class="line">tcp-backlog 511</div><div class="line">timeout 0</div><div class="line">tcp-keepalive 0</div><div class="line">loglevel notice</div><div class="line">logfile &quot;&quot;</div><div class="line">databases 16</div><div class="line">save 900 1</div><div class="line">save 300 10</div><div class="line">save 60 10000</div><div class="line">stop-writes-on-bgsave-error yes</div><div class="line">rdbcompression yes</div><div class="line">rdbchecksum yes</div><div class="line">dbfilename dump.rdb</div><div class="line">dir ./</div><div class="line">slave-serve-stale-data yes</div><div class="line">slave-read-only yes</div><div class="line">repl-diskless-sync no</div><div class="line">repl-diskless-sync-delay 5</div><div class="line">repl-disable-tcp-nodelay no</div><div class="line">slave-priority 100</div><div class="line">appendonly no</div><div class="line">appendfilename &quot;appendonly.aof&quot;</div><div class="line">appendfsync everysec</div><div class="line">no-appendfsync-on-rewrite no</div><div class="line">auto-aof-rewrite-percentage 100</div><div class="line">auto-aof-rewrite-min-size 64mb</div><div class="line">aof-load-truncated yes</div><div class="line">lua-time-limit 5000</div><div class="line">slowlog-log-slower-than 10000</div><div class="line">slowlog-max-len 128</div><div class="line">latency-monitor-threshold 0</div><div class="line">notify-keyspace-events &quot;&quot;</div><div class="line">hash-max-ziplist-entries 512</div><div class="line">hash-max-ziplist-value 64</div><div class="line">list-max-ziplist-entries 512</div><div class="line">list-max-ziplist-value 64</div><div class="line">set-max-intset-entries 512</div><div class="line">zset-max-ziplist-entries 128</div><div class="line">zset-max-ziplist-value 64</div><div class="line">hll-sparse-max-bytes 3000</div><div class="line">activerehashing yes</div><div class="line">client-output-buffer-limit normal 0 0 0</div><div class="line">client-output-buffer-limit slave 256mb 64mb 60</div><div class="line">client-output-buffer-limit pubsub 32mb 8mb 60</div><div class="line">hz 10</div><div class="line">aof-rewrite-incremental-fsync yes</div></pre></td></tr></table></figure></p>
+<p><strong>对比:</strong> </p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序号</th>
+<th style="text-align:center">配置名</th>
+<th style="text-align:center">标准</th>
+<th style="text-align:center">cachecloud</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">pidfile</td>
+<td style="text-align:center">/var/run/redis.pid</td>
+<td style="text-align:center">none</td>
+<td>none</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">port</td>
+<td style="text-align:center">6379</td>
+<td style="text-align:center">自定义端口</td>
+<td>单机多实例</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">三个save</td>
+<td style="text-align:center">900,300,60</td>
+<td style="text-align:center">none</td>
+<td>不使用自动rdb</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center">stop-writes-on-bgsave-error</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">none</td>
+<td>默认是yes，这个值应该设置成no比较好(cachecloud后期版本会进行修改)</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:center">rdbcompression</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">none</td>
+<td>默认就是yes</td>
+</tr>
+<tr>
+<td style="text-align:center">6</td>
+<td style="text-align:center">rdbchecksum</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">none</td>
+<td>默认就是yes</td>
+</tr>
+<tr>
+<td style="text-align:center">7</td>
+<td style="text-align:center">dbfilename</td>
+<td style="text-align:center">dump.rdb</td>
+<td style="text-align:center">dump-${端口号}.rdb</td>
+<td>单机多实例</td>
+</tr>
+<tr>
+<td style="text-align:center">8</td>
+<td style="text-align:center">dir</td>
+<td style="text-align:center">当前目录</td>
+<td style="text-align:center">/opt/cachecloud/data</td>
+<td>不要当前路径</td>
+</tr>
+<tr>
+<td style="text-align:center">9</td>
+<td style="text-align:center">repl-diskless-sync</td>
+<td style="text-align:center">no</td>
+<td style="text-align:center">none</td>
+<td>默认就是no</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:center">repl-diskless-sync-delay</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">none</td>
+<td>默认就是5</td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:center">appendonly</td>
+<td style="text-align:center">no</td>
+<td style="text-align:center">yes</td>
+<td>开启aof</td>
+</tr>
+<tr>
+<td style="text-align:center">12</td>
+<td style="text-align:center">appendfilename</td>
+<td style="text-align:center">appendonly.aof</td>
+<td style="text-align:center">appendonly-${端口号}.aof</td>
+<td>单机多实例</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:center">no-appendfsync-on-rewrite</td>
+<td style="text-align:center">no</td>
+<td style="text-align:center">yes</td>
+<td>防止aof重写期间，可能造成aof阻塞，从而阻塞主线程的可能</td>
+</tr>
+<tr>
+<td style="text-align:center">14</td>
+<td style="text-align:center">auto-aof-rewrite-percentage</td>
+<td style="text-align:center">100</td>
+<td style="text-align:center">做了随机化70~99</td>
+<td>none</td>
+</tr>
+<tr>
+<td style="text-align:center">15</td>
+<td style="text-align:center">aof-load-truncated</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">none</td>
+<td>默认是yes</td>
+</tr>
+<tr>
+<td style="text-align:center">16</td>
+<td style="text-align:center">latency-monitor-threshold</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">none</td>
+<td>默认值是0</td>
+</tr>
+<tr>
+<td style="text-align:center">17</td>
+<td style="text-align:center">notify-keyspace-events</td>
+<td style="text-align:center">“”</td>
+<td style="text-align:center">none</td>
+<td>默认值是空</td>
+</tr>
+<tr>
+<td style="text-align:center">18</td>
+<td style="text-align:center">client-output-buffer-limit slave</td>
+<td style="text-align:center">256mb 64mb 60</td>
+<td style="text-align:center">512mb 128mb 60</td>
+<td>增大slave client的输出缓冲</td>
+</tr>
+<tr>
+<td style="text-align:center">19</td>
+<td style="text-align:center">repl-timeout</td>
+<td style="text-align:center"># repl-timeout 60</td>
+<td style="text-align:center">60</td>
+<td>就是默认值</td>
+</tr>
+<tr>
+<td style="text-align:center">20</td>
+<td style="text-align:center">repl-ping-slave-period</td>
+<td style="text-align:center"># repl-ping-slave-period 10</td>
+<td style="text-align:center">10</td>
+<td>就是默认值</td>
+</tr>
+<tr>
+<td style="text-align:center">21</td>
+<td style="text-align:center">repl-backlog-size</td>
+<td style="text-align:center"># repl-backlog-size 1mb</td>
+<td style="text-align:center">10mb</td>
+<td>增大复制缓冲区，减少因主从网络不正常，造成频繁全量复制可能</td>
+</tr>
+<tr>
+<td style="text-align:center">22</td>
+<td style="text-align:center">repl-backlog-ttl</td>
+<td style="text-align:center"># repl-backlog-ttl 3600</td>
+<td style="text-align:center">3600</td>
+<td>就是默认值</td>
+</tr>
+<tr>
+<td style="text-align:center">23</td>
+<td style="text-align:center">maxmemory</td>
+<td style="text-align:center">0(没有限制最大内存)</td>
+<td style="text-align:center">自定义</td>
+<td>maxmemory一定要设置(建议小分片)</td>
+</tr>
+<tr>
+<td style="text-align:center">24</td>
+<td style="text-align:center">maxmemory-policy</td>
+<td style="text-align:center"># maxmemory-policy noeviction</td>
+<td style="text-align:center">volatile-lru</td>
+<td>在过期的key中使用lru</td>
+</tr>
+</tbody>
+</table>
+<p>这些配置只是建议配置，例如关系到Redis安全可以配置requirepass,rename-command,bind,masterauth等等。要根据自己公司的需求进行配置。</p>
+<h4 id="2-Redis-Sentinel节点与标准配置的不同"><a href="#2-Redis-Sentinel节点与标准配置的不同" class="headerlink" title="2. Redis Sentinel节点与标准配置的不同"></a>2. Redis Sentinel节点与标准配置的不同</h4><p>解压后默认配置是sentinel.conf文件（去掉注释和空行）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">port 26379</div><div class="line">dir /tmp</div><div class="line">sentinel monitor mymaster 127.0.0.1 6379 2</div><div class="line">sentinel down-after-milliseconds mymaster 30000</div><div class="line">sentinel parallel-syncs mymaster 1</div><div class="line">sentinel failover-timeout mymaster 180000</div></pre></td></tr></table></figure></p>
+<p><strong>对比:</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序号</th>
+<th style="text-align:center">配置名</th>
+<th style="text-align:center">标准</th>
+<th style="text-align:center">cachecloud</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">port</td>
+<td style="text-align:center">6379</td>
+<td style="text-align:center">自定义端口</td>
+<td>单机多实例</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">sentinel monitor mymaster</td>
+<td style="text-align:center">127.0.0.1 6379 2</td>
+<td style="text-align:center">ip port 1</td>
+<td>应该设置为2，cachecloud在公司内部用了三个sentinel</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">sentinel down-after-milliseconds</td>
+<td style="text-align:center">30000</td>
+<td style="text-align:center">20000</td>
+<td>降低主观判定的时间</td>
+</tr>
+</tbody>
+</table>
+<p>有关于sentinel的配置基本和官方配置是一致的，dir应该修改一下</p>
+<h4 id="3-Redis-Cluster节点与标准配置的不同"><a href="#3-Redis-Cluster节点与标准配置的不同" class="headerlink" title="3. Redis Cluster节点与标准配置的不同"></a>3. Redis Cluster节点与标准配置的不同</h4><p>解压后默认配置是redis.conf文件（去掉注释和空行）,在redis.conf中所有和cluster相关的配置都是注释掉的，也就是使用了默认的配置</p>
+<p><strong>对比:</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序号</th>
+<th style="text-align:center">配置名</th>
+<th style="text-align:center">标准</th>
+<th style="text-align:center">cachecloud</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">cluster-enabled</td>
+<td style="text-align:center">no</td>
+<td style="text-align:center">yes</td>
+<td>开启cluster模式</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">cluster-node-timeout</td>
+<td style="text-align:center">15000</td>
+<td style="text-align:center">15000</td>
+<td>这个参数很重要</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">cluster-slave-validity-factor</td>
+<td style="text-align:center">10</td>
+<td style="text-align:center">10</td>
+<td>none</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center">cluster-migration-barrier</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td>none</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:center">cluster-config-file</td>
+<td style="text-align:center">nodes-6379.conf</td>
+<td style="text-align:center">nodes-${端口}.conf</td>
+<td>单机多实例</td>
+</tr>
+<tr>
+<td style="text-align:center">6</td>
+<td style="text-align:center">cluster-require-full-coverage</td>
+<td style="text-align:center">yes</td>
+<td style="text-align:center">no</td>
+<td>节点部分失败期间,其他节点是否继续工作</td>
+</tr>
+</tbody>
+</table>
+<p>有关于cluster的配置比较重要的是cluster-node-timeout、cluster-require-full-coverage </p>
+<h3 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h3><p>Cachecloud给出的Redis配置已经在公司内使用，具有一定的普适性，但是还是需要根据具体的应用场景进行调优配置(可以利用配置修改申请对具体应用的配置进行优化。)</p>
+<p>未来的改进：</p>
+<ul>
+<li>Redis 3.2新增了很多可以config set的配置。</li>
+<li>Cachecloud的配置模板化，不是写在java代码里。</li>
+</ul>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/31/cachecloud客户端统计上报功能/" rel="next" title="CacheCloud客户端上报说明">
+                <i class="fa fa-chevron-left"></i> CacheCloud客户端上报说明
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/06/28/1.2. 迁移工具使用说明/" rel="prev" title="CacheCloud 1.2-迁移工具使用说明">
+                CacheCloud 1.2-迁移工具使用说明 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/06/28/Cachecloud中Redis的相关配置/"
+           data-title="Cachecloud中Redis的相关配置" data-url="http://yoursite.com/2016/06/28/Cachecloud中Redis的相关配置/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、Redis配置在哪？"><span class="nav-number">1.</span> <span class="nav-text">一、Redis配置在哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、配置”优化”"><span class="nav-number">2.</span> <span class="nav-text">二、配置”优化”</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Redis普通节点与标准配置的不同"><span class="nav-number">2.1.</span> <span class="nav-text">1. Redis普通节点与标准配置的不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Redis-Sentinel节点与标准配置的不同"><span class="nav-number">2.2.</span> <span class="nav-text">2. Redis Sentinel节点与标准配置的不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Redis-Cluster节点与标准配置的不同"><span class="nav-number">2.3.</span> <span class="nav-text">3. Redis Cluster节点与标准配置的不同</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、总结"><span class="nav-number">3.</span> <span class="nav-text">三、总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

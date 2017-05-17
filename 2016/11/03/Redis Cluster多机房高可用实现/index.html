@@ -1,0 +1,845 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="1本文以Redis-Cluster为例子，实际使用中Redis-Sentinel和Redis Standalone也是一样的。 一、现有问题由于Redis本身的一些特性(例如复制)以及使用场景，造成Redis不太适合部署在不同的机房，所以通常来看Redis集群都是在同一个机房部署的。虽然Redis集群自身已经具备了高可用的特性，即使几个Redis节点异常或者挂掉，Redis Cluster也会实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis Cluster多机房高可用实现--基于客户端">
+<meta property="og:url" content="http://yoursite.com/2016/11/03/Redis Cluster多机房高可用实现/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="1本文以Redis-Cluster为例子，实际使用中Redis-Sentinel和Redis Standalone也是一样的。 一、现有问题由于Redis本身的一些特性(例如复制)以及使用场景，造成Redis不太适合部署在不同的机房，所以通常来看Redis集群都是在同一个机房部署的。虽然Redis集群自身已经具备了高可用的特性，即使几个Redis节点异常或者挂掉，Redis Cluster也会实现">
+<meta property="og:image" content="http://i2.itc.cn/20161103/3084_2bebda41_d500_20d1_b7aa_fd027c8587fd_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20161103/3084_3fdab5e7_74f9_e816_ddab_956077bb1981_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20161103/3084_aa0b9646_e66b_0609_163b_b815c5fc13f1_1.png">
+<meta property="og:image" content="http://mfiles.sohu.com/20161103/3084_6d73285f_3c01_c34f_dedf_f195653d1514_1.gif">
+<meta property="og:image" content="http://mfiles.sohu.com/20161103/3084_457dfcdc_35b6_822c_b667_8d0b263785e4_1.gif">
+<meta property="og:image" content="http://i0.itc.cn/20161103/3084_bc78eec6_cbf2_c525_f59a_cd599f4a8a31_1.png">
+<meta property="og:updated_time" content="2016-11-04T01:46:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis Cluster多机房高可用实现--基于客户端">
+<meta name="twitter:description" content="1本文以Redis-Cluster为例子，实际使用中Redis-Sentinel和Redis Standalone也是一样的。 一、现有问题由于Redis本身的一些特性(例如复制)以及使用场景，造成Redis不太适合部署在不同的机房，所以通常来看Redis集群都是在同一个机房部署的。虽然Redis集群自身已经具备了高可用的特性，即使几个Redis节点异常或者挂掉，Redis Cluster也会实现">
+<meta name="twitter:image" content="http://i2.itc.cn/20161103/3084_2bebda41_d500_20d1_b7aa_fd027c8587fd_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Redis Cluster多机房高可用实现--基于客户端 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Redis Cluster多机房高可用实现--基于客户端
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-11-03T11:20:00+08:00" content="2016-11-03">
+              2016-11-03
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/11/03/Redis Cluster多机房高可用实现/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/03/Redis Cluster多机房高可用实现/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/11/03/Redis Cluster多机房高可用实现/" class="leancloud_visitors" data-flag-title="Redis Cluster多机房高可用实现--基于客户端">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">本文以Redis-Cluster为例子，实际使用中Redis-Sentinel和Redis Standalone也是一样的。</div></pre></td></tr></table></figure>
+<h3 id="一、现有问题"><a href="#一、现有问题" class="headerlink" title="一、现有问题"></a>一、现有问题</h3><p>由于Redis本身的一些特性(例如复制)以及使用场景，造成Redis不太适合部署在不同的机房，所以通常来看Redis集群都是在同一个机房部署的。虽然Redis集群自身已经具备了高可用的特性，即使几个Redis节点异常或者挂掉，Redis Cluster也会实现故障自动转移，对应用方来说也可以在很短时间内恢复故障。但是如果发生了机房故障(断电、断网等极端情况)，如果应用方降级或者容错机制做的不好甚至业务本身不能降级，或者会丢失重要数据，或者可能瞬间会跑满应用的线程池造成服务不可用，对于一些重要的服务来说是非常致命的。      </p>
+<p>为了应对像机房故障这类情况，保证应用方在这种极端情况下，仍然可以正常服务(系统正常运行、数据正常)，所以需要给出一个Redis跨机房的方案。</p>
+<h3 id="二、实现思路和目标："><a href="#二、实现思路和目标：" class="headerlink" title="二、实现思路和目标："></a>二、实现思路和目标：</h3><h4 id="1-思路"><a href="#1-思路" class="headerlink" title="1.思路"></a>1.思路</h4><ul>
+<li>使用CacheCloud开通两个位于两个不同机房的Redis-Cluster集群(例如：兆维、北显)：一个叫major，作为主Redis服务，一个叫minor，作为备用Redis服务。</li>
+<li>开发定制版的客户端，利用netflix的hystrix组件能够解除依赖隔离的特性，在major出现故障时，将故障隔离，并将请求自动转发到minor，并且对于应用的主线程池没有影响。（有关hystrix的请求流程流程见下图，有关hystrix使用请参考：<a href="http://hot66hot.iteye.com/blog/2155036" target="_blank" rel="external">http://hot66hot.iteye.com/blog/2155036</a></li>
+</ul>
+<p><img src="http://i2.itc.cn/20161103/3084_2bebda41_d500_20d1_b7aa_fd027c8587fd_1.png" alt=""></p>
+<a id="more"></a>
+<h4 id="2-实现目标："><a href="#2-实现目标：" class="headerlink" title="2.实现目标："></a>2.实现目标：</h4><ul>
+<li>客户端易接入，如同使用Jedis API一样。</li>
+<li>真正实现跨机房的故障转移。</li>
+<li>依赖隔离，也就是说即使Redis出现问题，也不会影响主线程池。</li>
+<li>读取数据正常。</li>
+<li>写数据尽可能一致。</li>
+<li>更多的故障转移可配置参数(hystrix)：例如隔离线程池大小，超时等</li>
+<li>暴露相关统计数据和报表：如jmx和hystrix-dashboard</li>
+</ul>
+<p>三、实施：</p>
+<ul>
+<li>1.利用hystrix能够隔离依赖的特性，为major和minor分别放到不同的线程池中(与应用的主线程池隔离)</li>
+<li>2.客户端接口和初始化方法：由于是定制化客户端，所以暂时没有通用的方法，所有的API需要自己实现。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">RedisCrossRoomClient</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function">String <span class="title">set</span><span class="params">(String key, String value)</span></span>;</div><div class="line">    </div><div class="line">    <span class="function">String <span class="title">get</span><span class="params">(String key)</span></span>;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>初始化方法，需要传入两个初始化好的PipeLineCluster</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">PipeLineCluster是我们内部对于JedisCluster的扩展，这里看成JedisCluster即可。</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisClusterCrossRoomClientImpl</span> <span class="keyword">implements</span> <span class="title">RedisCrossRoomClient</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> Logger logger = LoggerFactory.getLogger(RedisClusterCrossRoomClientImpl.class);</div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 主</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> PipelineCluster majorPipelineCluster;</div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 备</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> PipelineCluster minorPipelineCluster;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RedisClusterCrossRoomClientImpl</span><span class="params">(PipelineCluster majorPipelineCluster, PipelineCluster minorPipelineCluster)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.majorPipelineCluster = majorPipelineCluster;</div><div class="line">        <span class="keyword">this</span>.minorPipelineCluster = minorPipelineCluster;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>3.读操作方案：如下图，正常run指向到major, 异常(2.1图中所有指向getFallback)指向到minor。</li>
+</ul>
+<p><img src="http://i2.itc.cn/20161103/3084_3fdab5e7_74f9_e816_ddab_956077bb1981_1.png" alt=""></p>
+<p>例如：正常情况下都是从majorPipelineCluster读取数据，当出现非正常情况时（hystrix阀门开启、线程池拒绝、超时、异常）等情况时，走minorPipelineCluster的逻辑</p>
+<p>基础类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseCommand</span> </span>&#123;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(<span class="keyword">this</span>.getClass());</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * hystrix参数,例如超时、线程池、关门策略、开门策略等等。</div><div class="line">     */</div><div class="line">    </div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MAJOR_READ_COMMAND_KEY = <span class="string">"major_read_command"</span>;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MAJOR_WRITE_COMMAND_KEY = <span class="string">"major_write_command"</span>;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MAJOR_GROUP_KEY = <span class="string">"major_redis_group"</span>;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MAJOR_THREAD_POOL_KEY = <span class="string">"major_redis_pool"</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> majorTimeOut = <span class="number">1000</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> majorThreads = <span class="number">100</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * hystrix参数,例如超时、线程池、关门策略、开门策略等等。</div><div class="line">     */</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MINOR_READ_COMMAND_KEY = <span class="string">"minor_read_command"</span>;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MINOR_WRITE_COMMAND_KEY = <span class="string">"minor_write_command"</span>;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MINOR_GROUP_KEY = <span class="string">"minor_redis_group"</span>;</div><div class="line">    <span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> String MINOR_THREAD_POOL_KEY = <span class="string">"minor_redis_pool"</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> minorTimeOut = <span class="number">1000</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> minorThreads = <span class="number">100</span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>读命令类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadCommand</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">BaseCommand</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> T <span class="title">readMajor</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> T <span class="title">readMinor</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">read</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="comment">// 1.收集总数</span></div><div class="line">        RedisCrossRoomClientStatusCollector.collectCrossRoomStatus(HystrixStatCountTypeEnum.ALL);</div><div class="line">        </div><div class="line">        DataComponentCommand&lt;T&gt; majorCommand =</div><div class="line">                <span class="keyword">new</span> DataComponentCommand&lt;T&gt;(MAJOR_READ_COMMAND_KEY, MAJOR_GROUP_KEY, MAJOR_THREAD_POOL_KEY,</div><div class="line">                        majorTimeOut, majorThreads) &#123;</div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">protected</span> T <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">                        <span class="comment">// 2.收集run总数</span></div><div class="line">                        RedisCrossRoomClientStatusCollector.collectCrossRoomStatus(HystrixStatCountTypeEnum.RUN);</div><div class="line">                        <span class="keyword">return</span> readMajor();</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> T <span class="title">getBusinessFallback</span><span class="params">()</span> </span>&#123;</div><div class="line">                        <span class="comment">// 3.收集fallback总数</span></div><div class="line">                        RedisCrossRoomClientStatusCollector.collectCrossRoomStatus(HystrixStatCountTypeEnum.FALLBACK_ALL);</div><div class="line">                        </div><div class="line">                        RedisCrossRoomHystrixStat.counterFallBack(MAJOR_READ_COMMAND_KEY);</div><div class="line">                        <span class="keyword">return</span> <span class="keyword">new</span> DataComponentCommand&lt;T&gt;(MINOR_READ_COMMAND_KEY, MINOR_GROUP_KEY, MINOR_THREAD_POOL_KEY,</div><div class="line">                                minorTimeOut, minorThreads) &#123;</div><div class="line">                            <span class="meta">@Override</span></div><div class="line">                            <span class="function"><span class="keyword">protected</span> T <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">                                <span class="comment">// 4.收集fallback-run总数</span></div><div class="line">                                RedisCrossRoomClientStatusCollector.collectCrossRoomStatus(HystrixStatCountTypeEnum.FALLBACK_RUN);</div><div class="line">                                <span class="keyword">return</span> readMinor();</div><div class="line">                            &#125;</div><div class="line"></div><div class="line">                            <span class="meta">@Override</span></div><div class="line">                            <span class="function"><span class="keyword">public</span> T <span class="title">getBusinessFallback</span><span class="params">()</span> <span class="keyword">throws</span> RedisCrossRoomReadMinorFallbackException </span>&#123;</div><div class="line">                                <span class="comment">// 5.收集fallback-fallback总数</span></div><div class="line">                                RedisCrossRoomClientStatusCollector.collectCrossRoomStatus(HystrixStatCountTypeEnum.FALLBACK_FALLBACK);</div><div class="line">                                <span class="keyword">throw</span> <span class="keyword">new</span> RedisCrossRoomReadMinorFallbackException(<span class="string">"MinorFallbackException"</span>);</div><div class="line">                            &#125;</div><div class="line">                        &#125;.execute();</div><div class="line">                    &#125;</div><div class="line">                &#125;;</div><div class="line">        <span class="keyword">return</span> majorCommand.execute();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>例如get(String key)命令</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisClusterCrossRoomClientImpl</span> <span class="keyword">implements</span> <span class="title">RedisCrossRoomClient</span> </span>&#123;</div><div class="line">...</div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">get</span><span class="params">(<span class="keyword">final</span> String key)</span> </span>&#123;</div><div class="line">	    <span class="keyword">return</span> <span class="keyword">new</span> ReadCommand&lt;String&gt;() &#123;</div><div class="line">	</div><div class="line">	        <span class="meta">@Override</span></div><div class="line">	        <span class="function"><span class="keyword">protected</span> String <span class="title">readMajor</span><span class="params">()</span> </span>&#123;</div><div class="line">	            <span class="keyword">return</span> majorPipelineCluster.get(key);</div><div class="line">	        &#125;</div><div class="line">	</div><div class="line">	        <span class="meta">@Override</span></div><div class="line">	        <span class="function"><span class="keyword">protected</span> String <span class="title">readMinor</span><span class="params">()</span> </span>&#123;</div><div class="line">	            <span class="keyword">return</span> minorPipelineCluster.get(key);</div><div class="line">	        &#125;</div><div class="line">	    &#125;.read();</div><div class="line">	</div><div class="line">	&#125;</div><div class="line">...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>4.写操作方案目标：尽可能双写，如果发生故障暂时只是做了隔离，没有做数据同步处理（未来会考虑接入MQ），目前只把写入的结果返回给应用方，应用方来维持一致性。</li>
+</ul>
+<p>MultiWriteResult类，四个成员变量分别为：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序号</th>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">DataStatusEnum majorStatus</td>
+<td style="text-align:center">主集群执行结果状态</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">T majorResult</td>
+<td style="text-align:center">主集群执行Redis命令结果</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">DataStatusEnum minorStatus</td>
+<td style="text-align:center">备用集群执行结果状态</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center">T minorResult</td>
+<td style="text-align:center">备用集群执行Redis命令结果</td>
+</tr>
+</tbody>
+</table>
+<p><img src="http://i3.itc.cn/20161103/3084_aa0b9646_e66b_0609_163b_b815c5fc13f1_1.png" alt=""></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">WriteCommand</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">BaseCommand</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> T <span class="title">writeMajor</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> T <span class="title">writeMinor</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> String <span class="title">getCommandParam</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> MultiWriteResult&lt;T&gt; <span class="title">write</span><span class="params">()</span> </span>&#123;</div><div class="line">        DataComponentCommand&lt;T&gt; majorCommand =</div><div class="line">                <span class="keyword">new</span> DataComponentCommand&lt;T&gt;(MAJOR_WRITE_COMMAND_KEY, MAJOR_GROUP_KEY, MAJOR_THREAD_POOL_KEY,</div><div class="line">                        majorTimeOut, majorThreads) &#123;</div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">protected</span> T <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">                        <span class="keyword">return</span> writeMajor();</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> T <span class="title">getBusinessFallback</span><span class="params">()</span> </span>&#123;</div><div class="line">                        logger.warn(<span class="string">"major cross-room failed: &#123;&#125;"</span>, getCommandParam());</div><div class="line">                        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125;;</div><div class="line"></div><div class="line">        DataComponentCommand&lt;T&gt; minorCommand =</div><div class="line">                <span class="keyword">new</span> DataComponentCommand&lt;T&gt;(MINOR_WRITE_COMMAND_KEY, MINOR_GROUP_KEY, MINOR_THREAD_POOL_KEY,</div><div class="line">                        minorTimeOut, minorThreads) &#123;</div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">protected</span> T <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">                        <span class="keyword">return</span> writeMinor();</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> T <span class="title">getBusinessFallback</span><span class="params">()</span> </span>&#123;</div><div class="line">                        logger.warn(<span class="string">"minor cross-room failed: &#123;&#125;"</span>, getCommandParam());</div><div class="line">                        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125;;</div><div class="line"></div><div class="line">        Future&lt;T&gt; majorFuture = majorCommand.queue();</div><div class="line">        Future&lt;T&gt; minorFuture = minorCommand.queue();</div><div class="line">        T majorResult = <span class="keyword">null</span>;</div><div class="line">        T minorResult = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            majorResult = majorFuture.get();</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            logger.error(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            minorResult = minorFuture.get();</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            logger.error(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        DataStatusEnum majorStatus = DataStatusEnum.SUCCESS;</div><div class="line">        DataStatusEnum minorStatus = DataStatusEnum.SUCCESS;</div><div class="line">        <span class="keyword">if</span> (majorResult == <span class="keyword">null</span>) &#123;</div><div class="line">            majorStatus = DataStatusEnum.FAIL;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (minorResult == <span class="keyword">null</span>) &#123;</div><div class="line">            minorStatus = DataStatusEnum.FAIL;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> MultiWriteResult&lt;T&gt;(majorStatus, majorResult, minorStatus, minorResult);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>例如set命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">public class RedisClusterCrossRoomClientImpl implements RedisCrossRoomClient &#123;</div><div class="line">...</div><div class="line">	@Override</div><div class="line">	public MultiWriteResult&lt;String&gt; set(final String key, final String value) &#123;</div><div class="line">	    return new WriteCommand&lt;String&gt;() &#123;</div><div class="line">	        @Override</div><div class="line">	        protected String writeMajor() &#123;</div><div class="line">	            return majorPipelineCluster.set(key, value);</div><div class="line">	        &#125;</div><div class="line">	</div><div class="line">	        @Override</div><div class="line">	        protected String writeMinor() &#123;</div><div class="line">	            return minorPipelineCluster.set(key, value);</div><div class="line">	        &#125;</div><div class="line">	</div><div class="line">	        @Override</div><div class="line">	        protected String getCommandParam() &#123;</div><div class="line">	            return String.format(&quot;set key %s value %s&quot;, key, value);</div><div class="line">	        &#125;</div><div class="line">	    &#125;.write();</div><div class="line">	&#125;</div><div class="line">...</div></pre></td></tr></table></figure></p>
+<h3 id="四、对外暴露的数据和报表："><a href="#四、对外暴露的数据和报表：" class="headerlink" title="四、对外暴露的数据和报表："></a>四、对外暴露的数据和报表：</h3><p>(1) hystrix-dashboard报表：实时统计图。<br>(2) jmx相关数据：major和minor相关统计，run和fallback调用次数、异常次数。</p>
+<h3 id="五、测试读："><a href="#五、测试读：" class="headerlink" title="五、测试读："></a>五、测试读：</h3><h4 id="1-major服务正常，但是major的线程池确实不够用"><a href="#1-major服务正常，但是major的线程池确实不够用" class="headerlink" title="1.major服务正常，但是major的线程池确实不够用"></a>1.major服务正常，但是major的线程池确实不够用</h4><h5 id="1-测试代码"><a href="#1-测试代码" class="headerlink" title="(1) 测试代码"></a>(1) 测试代码</h5><p>测试方法：major的线程池设置小一些，请求的并发量大一些，每个线程做1000次随机读并返回主线程<br>测试验证：每个请求都有返回结果(前提是key是存在的)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * 主线程池跑满：线程池size过小(major:30,minor:80，并发请求线程100)</div><div class="line"> * </div><div class="line"> * <span class="doctag">@throws</span> InterruptedException</div><div class="line"> */</div><div class="line"><span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testRandomReadWithEnoughThreads</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    redisClusterCrossRoomClient.setMajorThreads(<span class="number">30</span>);</div><div class="line">    redisClusterCrossRoomClient.setMinorThreads(<span class="number">80</span>);</div><div class="line">    <span class="keyword">int</span> threadNum = <span class="number">100</span>;</div><div class="line">    <span class="keyword">int</span> perSize = TOTAL_SIZE / threadNum;</div><div class="line">    <span class="keyword">int</span> totalNeedGet = <span class="number">1000</span>;</div><div class="line">    CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(threadNum);</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; threadNum; i++) &#123;</div><div class="line">        <span class="keyword">int</span> start = perSize * i + <span class="number">1</span>;</div><div class="line">        <span class="keyword">int</span> end = perSize * (i + <span class="number">1</span>);</div><div class="line">        Thread thread = <span class="keyword">new</span> RandomReadThread(start, end, totalNeedGet, countDownLatch);</div><div class="line">        thread.start();</div><div class="line">    &#125;</div><div class="line">    countDownLatch.await();</div><div class="line">    System.out.println(<span class="string">"request counter: "</span> + TOTAL_SIZE);</div><div class="line">    System.out.println(<span class="string">"readSuccess counter:"</span> + readSuccessCounter.get());</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomReadThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> start;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> end;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> totalNeedGet;</div><div class="line">    <span class="keyword">private</span> CountDownLatch countDownLatch;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">long</span> counter;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RandomReadThread</span><span class="params">(<span class="keyword">int</span> start, <span class="keyword">int</span> end, <span class="keyword">int</span> totalNeedGet, CountDownLatch countDownLatch)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.start = start;</div><div class="line">        <span class="keyword">this</span>.end = end;</div><div class="line">        <span class="keyword">this</span>.totalNeedGet = totalNeedGet;</div><div class="line">        <span class="keyword">this</span>.countDownLatch = countDownLatch;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                <span class="keyword">if</span> (counter &gt;= totalNeedGet) &#123;</div><div class="line">                    countDownLatch.countDown();</div><div class="line">                    <span class="keyword">break</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (counter % <span class="number">100</span> == <span class="number">0</span>) &#123;</div><div class="line">                    logger.info(<span class="string">"&#123;&#125; execute &#123;&#125; th, total size &#123;&#125;"</span>, Thread.currentThread().getName(), counter,</div><div class="line">                            totalNeedGet);</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">int</span> id = start + <span class="keyword">new</span> Random().nextInt(end - start);</div><div class="line">                String key = <span class="string">"user:"</span> + id;</div><div class="line">                String result = redisClusterCrossRoomClient.get(key);</div><div class="line">                <span class="keyword">if</span> (StringUtils.isBlank(result)) &#123;</div><div class="line">                    logger.warn(<span class="string">"key &#123;&#125;, value is null"</span>, key);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    readSuccessCounter.incrementAndGet();</div><div class="line">                &#125;</div><div class="line">                counter++;</div><div class="line">                TimeUnit.MILLISECONDS.sleep(<span class="number">10</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="2-故障转移："><a href="#2-故障转移：" class="headerlink" title="(2) 故障转移："></a>(2) 故障转移：</h5><p>major线程池偶尔吃满，将线程拒绝，并执行降级逻辑，将请求自动转移到minor。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">2016-04-25 15:07:10,658 ERROR [Thread-186] impl.RedisClusterCrossRoomClientImpl: major_redis_command could not be queued for execution and failed retrieving fallback.</div><div class="line">com.netflix.hystrix.exception.HystrixRuntimeException: major_redis_command could not be queued for execution and failed retrieving fallback.</div><div class="line">	at com.netflix.hystrix.HystrixCommand.getFallbackOrThrowException(HystrixCommand.java:1660)</div><div class="line">	at com.netflix.hystrix.HystrixCommand.subscribeWithThreadIsolation(HystrixCommand.java:1250)</div><div class="line">	at com.netflix.hystrix.HystrixCommand.access$1400(HystrixCommand.java:103)</div><div class="line">	at com.netflix.hystrix.HystrixCommand$2.call(HystrixCommand.java:829)</div><div class="line">	at com.netflix.hystrix.HystrixCommand$2.call(HystrixCommand.java:803)</div><div class="line">	at rx.Observable.subscribe(Observable.java:6178)</div><div class="line">	at com.netflix.hystrix.HystrixCommand$TimeoutObservable$1.call(HystrixCommand.java:1080)</div><div class="line">	at com.netflix.hystrix.HystrixCommand$TimeoutObservable$1.call(HystrixCommand.java:1007)</div><div class="line">	at rx.Observable$2.call(Observable.java:153)</div><div class="line">	at rx.Observable$2.call(Observable.java:149)</div><div class="line">	at rx.Observable$2.call(Observable.java:153)</div><div class="line">	at rx.Observable$2.call(Observable.java:149)</div><div class="line">	at rx.Observable.subscribe(Observable.java:6178)</div><div class="line">	at com.netflix.hystrix.HystrixCommand$ObservableCommand$1.call(HystrixCommand.java:936)</div><div class="line">	at com.netflix.hystrix.HystrixCommand$ObservableCommand$1.call(HystrixCommand.java:932)</div><div class="line">	at rx.Observable.subscribe(Observable.java:6178)</div><div class="line">	at rx.operators.BlockingOperatorToFuture.toFuture(BlockingOperatorToFuture.java:55)</div><div class="line">	at rx.observables.BlockingObservable.toFuture(BlockingObservable.java:430)</div><div class="line">	at com.netflix.hystrix.HystrixCommand.queue(HystrixCommand.java:477)</div><div class="line">	at com.sohu.tv.cachecloud.client.redis.crossroom.impl.RedisClusterCrossRoomClientImpl.get(RedisClusterCrossRoomClientImpl.java:136)</div><div class="line">	at com.sohu.tv.cachecloud.client.redis.crossroom.RedisClusterCrossRoomClientImplTest$RandomReadThread.run(RedisClusterCrossRoomClientImplTest.java:212)</div><div class="line">Caused by: java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@5a56156e rejected from java.util.concurrent.ThreadPoolExecutor@656a0adc[Running, pool size = 30, active threads = 30, queued tasks = 0, completed tasks = 410]</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2048)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:821)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:1372)</div><div class="line">	at java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:132)</div><div class="line">	at com.netflix.hystrix.HystrixCommand.subscribeWithThreadIsolation(HystrixCommand.java:1166)</div><div class="line">	... 19 more</div></pre></td></tr></table></figure>
+<h5 id="3-hystrix-dashbord-部分被major线程池拒绝的线程-紫色-，通过fallback转移到minor线程池中执行。"><a href="#3-hystrix-dashbord-部分被major线程池拒绝的线程-紫色-，通过fallback转移到minor线程池中执行。" class="headerlink" title="(3) hystrix-dashbord: 部分被major线程池拒绝的线程(紫色)，通过fallback转移到minor线程池中执行。"></a>(3) hystrix-dashbord: 部分被major线程池拒绝的线程(紫色)，通过fallback转移到minor线程池中执行。</h5><p><img src="http://mfiles.sohu.com/20161103/3084_6d73285f_3c01_c34f_dedf_f195653d1514_1.gif" alt=""></p>
+<h5 id="4-最终结果，返回非空的结果的个数等于请求个数"><a href="#4-最终结果，返回非空的结果的个数等于请求个数" class="headerlink" title="(4) 最终结果，返回非空的结果的个数等于请求个数"></a>(4) 最终结果，返回非空的结果的个数等于请求个数</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">2016-04-25 15:08:43,393 INFO [main] crossroom.RedisClusterCrossRoomClientImplTest: request counter: 100000</div><div class="line">2016-04-25 15:08:43,393 INFO [main] crossroom.RedisClusterCrossRoomClientImplTest: readSuccess counter: 100000</div></pre></td></tr></table></figure>
+<h4 id="2-major服务异常，造成major的线程池不够用，或者存在大量异常，大量超时等等"><a href="#2-major服务异常，造成major的线程池不够用，或者存在大量异常，大量超时等等" class="headerlink" title="2. major服务异常，造成major的线程池不够用，或者存在大量异常，大量超时等等"></a>2. major服务异常，造成major的线程池不够用，或者存在大量异常，大量超时等等</h4><h5 id="1-测试代码："><a href="#1-测试代码：" class="headerlink" title="(1) 测试代码："></a>(1) 测试代码：</h5><p>测试方法：直接利用Redis的debug sleep seconds命令使得Redis暂时不提供服务。<br>测试验证：每个请求都有返回结果(前提是key是存在的)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * 主线程池跑满：主服务异常(用redis sleep进行模拟)</div><div class="line"> * </div><div class="line"> * <span class="doctag">@throws</span> InterruptedException</div><div class="line"> */</div><div class="line"><span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testRandomReadWithMajorSleep</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    <span class="comment">//让major下的所有节点休息10秒</span></div><div class="line">    Map&lt;String, JedisPool&gt; jedisPoolMap = majorPipelineCluster.getConnectionHandler().getNodes();</div><div class="line">    <span class="keyword">for</span> (JedisPool jedisPool : jedisPoolMap.values()) &#123;</div><div class="line">        Jedis jedis = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            jedis = jedisPool.getResource();</div><div class="line">            jedis.debug(DebugParams.SLEEP(<span class="number">10</span>));</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            logger.error(e.getMessage(), e);</div><div class="line">        &#125; <span class="keyword">finally</span> &#123;</div><div class="line">            <span class="keyword">if</span> (jedis != <span class="keyword">null</span>) &#123;</div><div class="line">                jedis.close();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> threadNum = <span class="number">20</span>;</div><div class="line">    <span class="keyword">int</span> perSize = TOTAL_SIZE / threadNum;</div><div class="line">    <span class="keyword">int</span> totalNeedGet = <span class="number">1000</span>;</div><div class="line">    CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(threadNum);</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; threadNum; i++) &#123;</div><div class="line">        <span class="keyword">int</span> start = perSize * i + <span class="number">1</span>;</div><div class="line">        <span class="keyword">int</span> end = perSize * (i + <span class="number">1</span>);</div><div class="line">        Thread thread = <span class="keyword">new</span> RandomReadThread(start, end, totalNeedGet, countDownLatch);</div><div class="line">        thread.start();</div><div class="line">    &#125;</div><div class="line">    countDownLatch.await();</div><div class="line">    logger.info(<span class="string">"request counter: &#123;&#125;"</span>, (threadNum * totalNeedGet));</div><div class="line">    logger.info(<span class="string">"readSuccess counter: &#123;&#125;"</span>, readSuccessCounter.get());</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="2-故障转移：-1"><a href="#2-故障转移：-1" class="headerlink" title="(2) 故障转移："></a>(2) 故障转移：</h5><p>直接major线程池的阀门打开了，所有请求执行降级逻辑，将请求自动转移到minor。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line">2016-04-25 14:41:48,144 ERROR [Thread-13] impl.RedisClusterCrossRoomClientImpl: major_redis_command short-circuited and failed retrieving fallback.</div><div class="line">com.netflix.hystrix.exception.HystrixRuntimeException: major_redis_command short-circuited and failed retrieving fallback.</div><div class="line"> at com.netflix.hystrix.HystrixCommand.getFallbackOrThrowException(HystrixCommand.java:1660)</div><div class="line"> at com.netflix.hystrix.HystrixCommand.getFallbackOrThrowException(HystrixCommand.java:1614)</div><div class="line"> at com.netflix.hystrix.HystrixCommand.access$1300(HystrixCommand.java:103)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$2.call(HystrixCommand.java:820)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$2.call(HystrixCommand.java:803)</div><div class="line"> at rx.Observable.subscribe(Observable.java:6178)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$TimeoutObservable$1.call(HystrixCommand.java:1080)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$TimeoutObservable$1.call(HystrixCommand.java:1007)</div><div class="line"> at rx.Observable$2.call(Observable.java:153)</div><div class="line"> at rx.Observable$2.call(Observable.java:149)</div><div class="line"> at rx.Observable$2.call(Observable.java:153)</div><div class="line"> at rx.Observable$2.call(Observable.java:149)</div><div class="line"> at rx.Observable.subscribe(Observable.java:6178)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$ObservableCommand$1.call(HystrixCommand.java:936)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$ObservableCommand$1.call(HystrixCommand.java:932)</div><div class="line"> at rx.Observable.subscribe(Observable.java:6178)</div><div class="line"> at rx.operators.BlockingOperatorToFuture.toFuture(BlockingOperatorToFuture.java:55)</div><div class="line"> at rx.observables.BlockingObservable.toFuture(BlockingObservable.java:430)</div><div class="line"> at com.netflix.hystrix.HystrixCommand.queue(HystrixCommand.java:477)</div><div class="line"> at com.sohu.tv.cachecloud.client.redis.crossroom.impl.RedisClusterCrossRoomClientImpl.get(RedisClusterCrossRoomClientImpl.java:136)</div><div class="line"> at com.sohu.tv.cachecloud.client.redis.crossroom.RedisClusterCrossRoomClientImplTest$RandomReadThread.run(RedisClusterCrossRoomClientImplTest.java:214)</div><div class="line">2016-04-25 14:41:48,145 ERROR [Thread-25] impl.RedisClusterCrossRoomClientImpl: major_redis_command short-circuited and failed retrieving fallback.</div><div class="line">com.netflix.hystrix.exception.HystrixRuntimeException: major_redis_command short-circuited and failed retrieving fallback.</div><div class="line"> at com.netflix.hystrix.HystrixCommand.getFallbackOrThrowException(HystrixCommand.java:1660)</div><div class="line"> at com.netflix.hystrix.HystrixCommand.getFallbackOrThrowException(HystrixCommand.java:1614)</div><div class="line"> at com.netflix.hystrix.HystrixCommand.access$1300(HystrixCommand.java:103)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$2.call(HystrixCommand.java:820)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$2.call(HystrixCommand.java:803)</div><div class="line"> at rx.Observable.subscribe(Observable.java:6178)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$TimeoutObservable$1.call(HystrixCommand.java:1080)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$TimeoutObservable$1.call(HystrixCommand.java:1007)</div><div class="line"> at rx.Observable$2.call(Observable.java:153)</div><div class="line"> at rx.Observable$2.call(Observable.java:149)</div><div class="line"> at rx.Observable$2.call(Observable.java:153)</div><div class="line"> at rx.Observable$2.call(Observable.java:149)</div><div class="line"> at rx.Observable.subscribe(Observable.java:6178)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$ObservableCommand$1.call(HystrixCommand.java:936)</div><div class="line"> at com.netflix.hystrix.HystrixCommand$ObservableCommand$1.call(HystrixCommand.java:932)</div><div class="line"> at rx.Observable.subscribe(Observable.java:6178)</div><div class="line"> at rx.operators.BlockingOperatorToFuture.toFuture(BlockingOperatorToFuture.java:55)</div><div class="line"> at rx.observables.BlockingObservable.toFuture(BlockingObservable.java:430)</div><div class="line"> at com.netflix.hystrix.HystrixCommand.queue(HystrixCommand.java:477)</div><div class="line"> at com.sohu.tv.cachecloud.client.redis.crossroom.impl.RedisClusterCrossRoomClientImpl.get(RedisClusterCrossRoomClientImpl.java:136)</div><div class="line"> at com.sohu.tv.cachecloud.client.redis.crossroom.RedisClusterCrossRoomClientImplTest$RandomReadThread.run(RedisClusterCrossRoomClientImplTest.java:214)</div></pre></td></tr></table></figure>
+<h5 id="3-hystrix-dashboard"><a href="#3-hystrix-dashboard" class="headerlink" title="(3) hystrix-dashboard"></a>(3) hystrix-dashboard</h5><p>major的熔断器阀门已经打开，请求都转移到迁移到minor，之后major恢复，流量又回到major<br><img src="http://mfiles.sohu.com/20161103/3084_457dfcdc_35b6_822c_b667_8d0b263785e4_1.gif" alt=""></p>
+<h5 id="4-最终结果："><a href="#4-最终结果：" class="headerlink" title="(4) 最终结果："></a>(4) 最终结果：</h5><p>返回非空的结果的个数等于请求个数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">2016-04-25 15:01:21,338 INFO  [main] crossroom.RedisClusterCrossRoomClientImplTest: request counter: 20000</div><div class="line">2016-04-25 15:01:21,338 INFO  [main] crossroom.RedisClusterCrossRoomClientImplTest: readSuccess counter: 20000</div></pre></td></tr></table></figure>
+<h3 id="六、测试写："><a href="#六、测试写：" class="headerlink" title="六、测试写："></a>六、测试写：</h3><h4 id="1-major异常："><a href="#1-major异常：" class="headerlink" title="1.major异常："></a>1.major异常：</h4><h5 id="1-测试代码-1"><a href="#1-测试代码-1" class="headerlink" title="(1)测试代码"></a>(1)测试代码</h5><p>直接sleep major，20个线程，一共写1000次，每个线程50个key 。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div></pre></td><td class="code"><pre><div class="line">	<span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testRandomWriteWithMajorSleep</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    <span class="comment">// major 休息10秒</span></div><div class="line">    tempSleepPipelineCluster(majorPipelineCluster, <span class="number">10</span>);</div><div class="line">    <span class="keyword">int</span> totalWrite = <span class="number">1000</span>;</div><div class="line">    <span class="keyword">int</span> threadNum = <span class="number">20</span>;</div><div class="line">    <span class="keyword">int</span> perSize = totalWrite / threadNum;</div><div class="line">    CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(threadNum);</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; threadNum; i++) &#123;</div><div class="line">        <span class="keyword">int</span> start = TOTAL_SIZE + perSize * i + <span class="number">1</span>;</div><div class="line">        <span class="keyword">int</span> end = TOTAL_SIZE + perSize * (i + <span class="number">1</span>);</div><div class="line">        Thread thread = <span class="keyword">new</span> RandomWriteThread(start, end, countDownLatch);</div><div class="line">        thread.start();</div><div class="line">    &#125;</div><div class="line">    countDownLatch.await();</div><div class="line">    logger.info(<span class="string">"total request write: &#123;&#125;"</span>, totalWrite);</div><div class="line">    logger.info(<span class="string">"writeFail counter: &#123;&#125;"</span>, writeFailCounter.get());</div><div class="line">    logger.info(<span class="string">"writePartFail counter: &#123;&#125;"</span>, writePartFailCounter.get());</div><div class="line">    logger.info(<span class="string">"writeSuccess counter: &#123;&#125;"</span>, writeSuccessCounter.get());</div><div class="line">&#125;</div><div class="line"><span class="comment">/**</span></div><div class="line"> * 随机写</div><div class="line"> * </div><div class="line"> * <span class="doctag">@author</span> leifu</div><div class="line"> * <span class="doctag">@Date</span> 2016年4月25日</div><div class="line"> * <span class="doctag">@Time</span> 下午3:39:13</div><div class="line"> */</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomWriteThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> start;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> end;</div><div class="line">    <span class="keyword">private</span> CountDownLatch countDownLatch;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RandomWriteThread</span><span class="params">(<span class="keyword">int</span> start, <span class="keyword">int</span> end, CountDownLatch countDownLatch)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.start = start;</div><div class="line">        <span class="keyword">this</span>.end = end;</div><div class="line">        <span class="keyword">this</span>.countDownLatch = countDownLatch;</div><div class="line">    &#125;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> id = start; id &lt;= end; id++) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                String key = <span class="string">"user:"</span> + id;</div><div class="line">                String value = String.valueOf(id);</div><div class="line">                MultiWriteResult&lt;String&gt; multiWriteResult = redisClusterCrossRoomClient.set(key, value);</div><div class="line">                DataStatusEnum majorStatus = multiWriteResult.getMajorStatus();</div><div class="line">                DataStatusEnum minorStatus = multiWriteResult.getMinorStatus();</div><div class="line">                <span class="keyword">if</span>(DataStatusEnum.SUCCESS.equals(majorStatus) &amp;&amp; DataStatusEnum.SUCCESS.equals(minorStatus))&#123;</div><div class="line">                    writeSuccessCounter.incrementAndGet();</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span>(!DataStatusEnum.SUCCESS.equals(majorStatus) &amp;&amp; !DataStatusEnum.SUCCESS.equals(minorStatus))&#123;</div><div class="line">                    writeFailCounter.incrementAndGet();</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    writePartFailCounter.incrementAndGet();</div><div class="line">                &#125;</div><div class="line">                </div><div class="line">                </div><div class="line">                TimeUnit.MILLISECONDS.sleep(<span class="number">10</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        countDownLatch.countDown();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="2-异常：major出现大量超时，major写入失败"><a href="#2-异常：major出现大量超时，major写入失败" class="headerlink" title="(2) 异常：major出现大量超时，major写入失败"></a>(2) 异常：major出现大量超时，major写入失败</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">2016-04-25 17:31:08,703 ERROR [main] crossroom.RedisClusterCrossRoomClientImplTest: java.net.SocketTimeoutException: Read timed out</div><div class="line">redis.clients.jedis.exceptions.JedisConnectionException: java.net.SocketTimeoutException: Read timed out</div><div class="line"> at redis.clients.util.RedisInputStream.ensureFill(RedisInputStream.java:201)</div><div class="line"> at redis.clients.util.RedisInputStream.readByte(RedisInputStream.java:40)</div><div class="line"> at redis.clients.jedis.Protocol.process(Protocol.java:142)</div><div class="line"> at redis.clients.jedis.Protocol.read(Protocol.java:206)</div><div class="line"> at redis.clients.jedis.Connection.readProtocolWithCheckingBroken(Connection.java:282)</div><div class="line"> at redis.clients.jedis.Connection.getStatusCodeReply(Connection.java:208)</div><div class="line"> at redis.clients.jedis.BinaryJedis.debug(BinaryJedis.java:2974)</div><div class="line"> at com.sohu.tv.cachecloud.client.redis.crossroom.RedisClusterCrossRoomClientImplTest.tempSleepPipelineCluster(RedisClusterCrossRoomClientImplTest.java:184)</div><div class="line"> at com.sohu.tv.cachecloud.client.redis.crossroom.RedisClusterCrossRoomClientImplTest.testRandomWriteWithMajorSleep(RedisClusterCrossRoomClientImplTest.java:252)</div><div class="line"> at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</div><div class="line"> at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</div><div class="line"> at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</div><div class="line"> at java.lang.reflect.Method.invoke(Method.java:606)</div><div class="line"> at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:47)</div><div class="line"> at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)</div><div class="line"> at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:44)</div><div class="line"> at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)</div><div class="line"> at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:271)</div><div class="line"> at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:70)</div><div class="line"> at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:50)</div><div class="line"> at org.junit.runners.ParentRunner$3.run(ParentRunner.java:238)</div><div class="line"> at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:63)</div><div class="line"> at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:236)</div><div class="line"> at org.junit.runners.ParentRunner.access$000(ParentRunner.java:53)</div><div class="line"> at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:229)</div><div class="line"> at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)</div><div class="line"> at org.junit.runners.ParentRunner.run(ParentRunner.java:309)</div><div class="line"> at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)</div><div class="line"> at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)</div><div class="line"> at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)</div><div class="line"> at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)</div><div class="line"> at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)</div><div class="line"> at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)</div><div class="line">Caused by: java.net.SocketTimeoutException: Read timed out</div><div class="line"> at java.net.SocketInputStream.socketRead0(Native Method)</div><div class="line"> at java.net.SocketInputStream.read(SocketInputStream.java:152)</div><div class="line"> at java.net.SocketInputStream.read(SocketInputStream.java:122)</div><div class="line"> at java.net.SocketInputStream.read(SocketInputStream.java:108)</div><div class="line"> at redis.clients.util.RedisInputStream.ensureFill(RedisInputStream.java:195)</div><div class="line"> ... 32 more</div><div class="line">2016-04-25 17:31:10,777 WARN [Thread-14] sources.URLConfigurationSource: No URLs will be polled as dynamic configuration sources.</div><div class="line">2016-04-25 17:31:10,777 INFO [Thread-14] sources.URLConfigurationSource: To enable URLs as dynamic configuration sources, define System property archaius.configurationSource.additionalUrls or make config.properties available on classpath.</div><div class="line">2016-04-25 17:31:10,779 INFO [Thread-14] config.DynamicPropertyFactory: DynamicPropertyFactory is initialized with configuration sources: com.netflix.config.ConcurrentCompositeConfiguration@224dc69c</div></pre></td></tr></table></figure>
+<h5 id="3-dashboard"><a href="#3-dashboard" class="headerlink" title="(3) dashboard:"></a>(3) dashboard:</h5><p><img src="http://i0.itc.cn/20161103/3084_bc78eec6_cbf2_c525_f59a_cd599f4a8a31_1.png" alt=""></p>
+<h5 id="4-最终结果：-1"><a href="#4-最终结果：-1" class="headerlink" title="(4) 最终结果："></a>(4) 最终结果：</h5><p>一共写了1000次，成功写入22次，部分成功写入了978次。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">2016-04-25 17:31:12,399 INFO [main] crossroom.RedisClusterCrossRoomClientImplTest: total request write: 1000</div><div class="line">2016-04-25 17:31:12,399 INFO [main] crossroom.RedisClusterCrossRoomClientImplTest: writeFail counter: 0</div><div class="line">2016-04-25 17:31:12,399 INFO [main] crossroom.RedisClusterCrossRoomClientImplTest: writePartFail counter: 978</div><div class="line">2016-04-25 17:31:12,399 INFO [main] crossroom.RedisClusterCrossRoomClientImplTest: writeSuccess counter: 22</div><div class="line">期间打印了失败的日志：</div><div class="line">2016-04-28 10:47:29,871 WARN [Thread-17] impl.RedisClusterCrossRoomClientImpl$1: major cross-room failed: set key user:10300 value 10300</div><div class="line">...................................</div></pre></td></tr></table></figure>
+<h3 id="七、问题和展望"><a href="#七、问题和展望" class="headerlink" title="七、问题和展望"></a>七、问题和展望</h3><ul>
+<li>由于是定制化客户端，目前只支持部分Redis命令API，后续需要添加</li>
+<li>在出现故障时，读正常，但是双写会出现major和minor数据不一致的情况。（可以考虑利用MQ机制来解决这个问题），目前使用打印日志的形式记录。</li>
+<li>…………..</li>
+</ul>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/24/CacheCloud 1.3开发计划/" rel="next" title="CacheCloud 1.3开发计划">
+                <i class="fa fa-chevron-left"></i> CacheCloud 1.3开发计划
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/17/Redis客户端常见异常分析/" rel="prev" title="Redis客户端常见异常分析">
+                Redis客户端常见异常分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/11/03/Redis Cluster多机房高可用实现/"
+           data-title="Redis Cluster多机房高可用实现--基于客户端" data-url="http://yoursite.com/2016/11/03/Redis Cluster多机房高可用实现/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、现有问题"><span class="nav-number">1.</span> <span class="nav-text">一、现有问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、实现思路和目标："><span class="nav-number">2.</span> <span class="nav-text">二、实现思路和目标：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-思路"><span class="nav-number">2.1.</span> <span class="nav-text">1.思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-实现目标："><span class="nav-number">2.2.</span> <span class="nav-text">2.实现目标：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、对外暴露的数据和报表："><span class="nav-number">3.</span> <span class="nav-text">四、对外暴露的数据和报表：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、测试读："><span class="nav-number">4.</span> <span class="nav-text">五、测试读：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-major服务正常，但是major的线程池确实不够用"><span class="nav-number">4.1.</span> <span class="nav-text">1.major服务正常，但是major的线程池确实不够用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-测试代码"><span class="nav-number">4.1.1.</span> <span class="nav-text">(1) 测试代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-故障转移："><span class="nav-number">4.1.2.</span> <span class="nav-text">(2) 故障转移：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-hystrix-dashbord-部分被major线程池拒绝的线程-紫色-，通过fallback转移到minor线程池中执行。"><span class="nav-number">4.1.3.</span> <span class="nav-text">(3) hystrix-dashbord: 部分被major线程池拒绝的线程(紫色)，通过fallback转移到minor线程池中执行。</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-最终结果，返回非空的结果的个数等于请求个数"><span class="nav-number">4.1.4.</span> <span class="nav-text">(4) 最终结果，返回非空的结果的个数等于请求个数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-major服务异常，造成major的线程池不够用，或者存在大量异常，大量超时等等"><span class="nav-number">4.2.</span> <span class="nav-text">2. major服务异常，造成major的线程池不够用，或者存在大量异常，大量超时等等</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-测试代码："><span class="nav-number">4.2.1.</span> <span class="nav-text">(1) 测试代码：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-故障转移：-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">(2) 故障转移：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-hystrix-dashboard"><span class="nav-number">4.2.3.</span> <span class="nav-text">(3) hystrix-dashboard</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-最终结果："><span class="nav-number">4.2.4.</span> <span class="nav-text">(4) 最终结果：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、测试写："><span class="nav-number">5.</span> <span class="nav-text">六、测试写：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-major异常："><span class="nav-number">5.1.</span> <span class="nav-text">1.major异常：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-测试代码-1"><span class="nav-number">5.1.1.</span> <span class="nav-text">(1)测试代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-异常：major出现大量超时，major写入失败"><span class="nav-number">5.1.2.</span> <span class="nav-text">(2) 异常：major出现大量超时，major写入失败</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-dashboard"><span class="nav-number">5.1.3.</span> <span class="nav-text">(3) dashboard:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-最终结果：-1"><span class="nav-number">5.1.4.</span> <span class="nav-text">(4) 最终结果：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#七、问题和展望"><span class="nav-number">6.</span> <span class="nav-text">七、问题和展望</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

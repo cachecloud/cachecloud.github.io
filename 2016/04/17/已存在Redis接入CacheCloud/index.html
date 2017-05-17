@@ -1,0 +1,801 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="这个导入只做了下面几件事儿：1. 验证输入内容。 2. 保存应用信息、实例信息，应用与实例关系信息。 3. 开启统计功能。(每分钟执行一次info命令) 所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能:监控、报警、报表、元信息管理查询、客户端等等(有关不能使用的功能请见第3节)1.说明:CacheCloud作为Redis私有云运维平台，实现多种类型(Redi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="已存在Redis接入CacheCloud">
+<meta property="og:url" content="http://yoursite.com/2016/04/17/已存在Redis接入CacheCloud/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="这个导入只做了下面几件事儿：1. 验证输入内容。 2. 保存应用信息、实例信息，应用与实例关系信息。 3. 开启统计功能。(每分钟执行一次info命令) 所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能:监控、报警、报表、元信息管理查询、客户端等等(有关不能使用的功能请见第3节)1.说明:CacheCloud作为Redis私有云运维平台，实现多种类型(Redi">
+<meta property="og:image" content="http://i1.itc.cn/20160417/3084_6249e353_9407_951d_a5c5_8128c49fc06b_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160417/3084_f2fed374_c77a_af9a_cf8d_0a9455ff52cb_1.png">
+<meta property="og:image" content="http://i0.itc.cn/20160417/3084_cbbaf293_1b51_b971_94bc_88e929f9d9b7_1.png">
+<meta property="og:image" content="http://i3.itc.cn/20160417/3084_920d8162_f351_9a1f_22ee_27bdedf66219_1.png">
+<meta property="og:updated_time" content="2017-01-31T07:40:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="已存在Redis接入CacheCloud">
+<meta name="twitter:description" content="这个导入只做了下面几件事儿：1. 验证输入内容。 2. 保存应用信息、实例信息，应用与实例关系信息。 3. 开启统计功能。(每分钟执行一次info命令) 所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能:监控、报警、报表、元信息管理查询、客户端等等(有关不能使用的功能请见第3节)1.说明:CacheCloud作为Redis私有云运维平台，实现多种类型(Redi">
+<meta name="twitter:image" content="http://i1.itc.cn/20160417/3084_6249e353_9407_951d_a5c5_8128c49fc06b_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 已存在Redis接入CacheCloud | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                已存在Redis接入CacheCloud
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-04-17T11:20:00+08:00" content="2016-04-17">
+              2016-04-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/04/17/已存在Redis接入CacheCloud/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/04/17/已存在Redis接入CacheCloud/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/04/17/已存在Redis接入CacheCloud/" class="leancloud_visitors" data-flag-title="已存在Redis接入CacheCloud">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="这个导入只做了下面几件事儿："><a href="#这个导入只做了下面几件事儿：" class="headerlink" title="这个导入只做了下面几件事儿："></a>这个导入只做了下面几件事儿：</h3><pre><code>1. 验证输入内容。
+2. 保存应用信息、实例信息，应用与实例关系信息。
+3. 开启统计功能。(每分钟执行一次info命令)
+</code></pre><h3 id="所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能-监控、报警、报表、元信息管理查询、客户端等等-有关不能使用的功能请见第3节"><a href="#所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能-监控、报警、报表、元信息管理查询、客户端等等-有关不能使用的功能请见第3节" class="headerlink" title="所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能:监控、报警、报表、元信息管理查询、客户端等等(有关不能使用的功能请见第3节)"></a>所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能:监控、报警、报表、元信息管理查询、客户端等等(有关不能使用的功能请见第3节)</h3><h4 id="1-说明"><a href="#1-说明" class="headerlink" title="1.说明:"></a>1.说明:</h4><p>CacheCloud作为Redis私有云运维平台，实现多种类型(Redis Standalone、Redis Sentinel、Redis Cluster)自动部署，对于Redis部署十分的方便，但是开源后一直有朋友问，如何将已经存在Redis接入到CacheCloud，这个确实是CacheCloud存在的一个问题(因为在我们的项目组CacheCloud是先开发出来，期间用的Redis)，为此我们开发了已存在Redis接入界面，支持一键将已有的Redis接入到Cachecloud，有关操作请看第2节，有关注意事项请看3节。</p>
+<h4 id="2-操作说明"><a href="#2-操作说明" class="headerlink" title="2.操作说明:"></a>2.操作说明:</h4><h5 id="2-1-功能界面"><a href="#2-1-功能界面" class="headerlink" title="2.1. 功能界面"></a>2.1. 功能界面</h5><pre><code>声明：此功能只有管理员可以使用，正式操作之前请看第3节注意事项
+</code></pre><p>管理员登录后，可以点击右侧下拉菜单中的导入应用(下图1)就可以进入导入应用界面(下图2)</p>
+<p><img src="http://i1.itc.cn/20160417/3084_6249e353_9407_951d_a5c5_8128c49fc06b_1.png"><br>(图1)</p>
+<a id="more"></a>
+<p><img src="http://i1.itc.cn/20160417/3084_f2fed374_c77a_af9a_cf8d_0a9455ff52cb_1.png"><br><img src="http://i0.itc.cn/20160417/3084_cbbaf293_1b51_b971_94bc_88e929f9d9b7_1.png"><br>(图2)</p>
+<h5 id="2-2-具体选项说明"><a href="#2-2-具体选项说明" class="headerlink" title="2.2. 具体选项说明"></a>2.2. 具体选项说明</h5><ul>
+<li>应用名称：中英文都可以，但是不要与现存的cachecloud应用名重复，否则会提示重复。</li>
+<li>应用描述：不为空即可</li>
+<li><strong>存储种类</strong>: 导入的Redis类型</li>
+<li>项目负责人: 中文名</li>
+<li><strong>测试</strong>：该应用是否为测试</li>
+<li><strong>报警阀值</strong>: 正整数，超过100就不报警了</li>
+<li><p><strong>实例详情</strong>: 导入Redis实例详情</p>
+<ol>
+<li>说明如图:<br><img src="http://i3.itc.cn/20160417/3084_920d8162_f351_9a1f_22ee_27bdedf66219_1.png"></li>
+<li><p>单点: ip:端口:maxmemory大小(要以M为单位)，例如127.0.0.1:6379:1024</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="number">10.10</span>.1.1:<span class="number">6379</span>:<span class="number">1024</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>sentinel: </p>
+<pre><code>数据节点=&gt;ip:端口:maxmeory大小(要以M为单位)，例如127.0.0.1:6379:1024(不分主从)&lt;br/&gt;
+sentinel节点=&gt;ip:端口:masterName，例如127.0.0.1:26379:myMasterName
+</code></pre><p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="number">10.10</span>.1.1:<span class="number">8000</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.2:<span class="number">8001</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.4:<span class="number">26379</span>:myMasterName</div><div class="line"><span class="number">10.10</span>.1.5:<span class="number">26380</span>:myMasterName</div><div class="line"><span class="number">10.10</span>.1.6:<span class="number">26381</span>:myMasterName</div></pre></td></tr></table></figure>
+</li>
+<li><p>cluster: 每行都是数据节点，不分主从，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="number">10.10</span>.1.1:<span class="number">6379</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.2:<span class="number">6380</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.3:<span class="number">6381</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.4:<span class="number">6382</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.5:<span class="number">6383</span>:<span class="number">1024</span></div><div class="line"><span class="number">10.10</span>.1.6:<span class="number">6384</span>:<span class="number">1024</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+</li>
+</ul>
+<h5 id="2-3-操作说明"><a href="#2-3-操作说明" class="headerlink" title="2.3. 操作说明"></a>2.3. 操作说明</h5><h6 id="2-3-1-格式验证"><a href="#2-3-1-格式验证" class="headerlink" title="2.3.1. 格式验证"></a>2.3.1. 格式验证</h6><p>填写完相关字段后，点击检查按钮，如果检查无误，那么会提示检查成功，此时开始导入按钮就变成可点击。如果提示错误，那么说明格式有问题，那么导入按钮不可以点击，常见错误如下：</p>
+<ul>
+<li>重复的应用名：说明你填写的应用名已经在cachecloud中存在。</li>
+<li>关于实例详细的格式错误：格式有问题，请参考2.2。</li>
+<li>机器ip不存在：说明实例详情中，有些机器信息并没有添加到cachecloud。</li>
+<li>节点不存活：说明有些ip:port对应的Redis ping不通。</li>
+<li>ip:port已经在instance_info表中存在，说明实例已经在cachecloud中。</li>
+<li>sentinel相关错误: 填写的masterName为空或者与真实masterName不符。</li>
+</ul>
+<h6 id="2-3-2-开始导入"><a href="#2-3-2-开始导入" class="headerlink" title="2.3.2. 开始导入"></a>2.3.2. 开始导入</h6><p>格式验证成功后，点击开始导入功能，就可以将填写的Redis实例导入到cachecloud中，包括应用信息，实例信息，应用和实例的各种统计信息的收集就会生效，报表就可以展示出来，并且相关报警也会自动启动。</p>
+<h4 id="3-注意事项"><a href="#3-注意事项" class="headerlink" title="3.注意事项"></a>3.注意事项</h4><ul>
+<li>已存在的Redis的配置中必须有maxmemory，否则会展示不出来应用内存的进度条。</li>
+<li><p>已存在的Redis所在机器必须添加userName和password,这个要和后台系统配置管理中的ssh用户名和密码一致。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">useradd userName</div><div class="line">passwd userName</div></pre></td></tr></table></figure>
+</li>
+<li><p>已存在的Redis不要设置密码，否则节点信息会收集失败，但是不影响应用与实例的元信息导入。</p>
+</li>
+<li>已存在的Redis所在机器不要用cachecloud-init.sh初始化，否则会和已知环境冲突。</li>
+<li>不要在已存在的Redis所在机器使用如下功能(cachecloud运维界面)：<br>(1)添加slave<br>(2)修复slot<br>(3)开启应用<br>(4)水平扩容添加节点<br>(5)启动节点<br>  因为上述功能都会添加新的节点，所以不用使用cachecloud在这些机器上执行开启节点的相关操作。</li>
+</ul>
+<h4 id="4-相关视频"><a href="#4-相关视频" class="headerlink" title="4.相关视频"></a>4.相关视频</h4><pre><code>详见百度网盘：http://pan.baidu.com/s/1c2mET5e
+</code></pre><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="number">6.1</span>.已存在Redis接入Cachecloud-说明</div><div class="line"><span class="number">6.2</span>.已存在Redis接入Cachecloud-问题说明</div><div class="line"><span class="number">6.3</span>.已存在Redis接入Cachecloud-使用说明</div><div class="line"><span class="number">6.4</span>.已经存在Redis接入Cachecloud-standalone</div><div class="line"><span class="number">6.5</span>.已经存在Redis接入Cachecloud-sentinel</div><div class="line"><span class="number">6.6</span>.已经存在Redis接入Cachecloud-cluster</div><div class="line"><span class="number">6.7</span>.已存在-相关注意和后续</div><div class="line"><span class="number">6.7</span>.0.后续思路</div><div class="line"><span class="number">6.7</span>.1.导入老的sentinel集群</div><div class="line"><span class="number">6.7</span>.2.更换成cachecloud节点方法</div><div class="line"><span class="number">6.7</span>.3.1 迁移老的sentinel操作-<span class="number">1</span></div><div class="line"><span class="number">6.7</span>.3.2 迁移老的sentinel操作-<span class="number">2</span></div><div class="line"><span class="number">6.7</span>.3.3 迁移老的sentinel操作-<span class="number">3</span></div></pre></td></tr></table></figure>
+<h4 id="5-迁移后续"><a href="#5-迁移后续" class="headerlink" title="5. 迁移后续"></a>5. 迁移后续</h4><p>建议迁移后续，可以利用redis的相关failover特性，把之前的Redis节点全都替换成cachecloud节点。</p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/12/bug修复日志/" rel="next" title="CacheCloud-功能升级和Bug修复日志">
+                <i class="fa fa-chevron-left"></i> CacheCloud-功能升级和Bug修复日志
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/17/v2计划/" rel="prev" title="CacheCloud-v2开发计划和招募">
+                CacheCloud-v2开发计划和招募 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/04/17/已存在Redis接入CacheCloud/"
+           data-title="已存在Redis接入CacheCloud" data-url="http://yoursite.com/2016/04/17/已存在Redis接入CacheCloud/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#这个导入只做了下面几件事儿："><span class="nav-number">1.</span> <span class="nav-text">这个导入只做了下面几件事儿：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能-监控、报警、报表、元信息管理查询、客户端等等-有关不能使用的功能请见第3节"><span class="nav-number">2.</span> <span class="nav-text">所以对现有的Redis不会有什么性能影响，而且可以使用CacheCloud绝大部分功能:监控、报警、报表、元信息管理查询、客户端等等(有关不能使用的功能请见第3节)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-说明"><span class="nav-number">2.1.</span> <span class="nav-text">1.说明:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-操作说明"><span class="nav-number">2.2.</span> <span class="nav-text">2.操作说明:</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-功能界面"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.1. 功能界面</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-具体选项说明"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2. 具体选项说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-操作说明"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.3. 操作说明</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-3-1-格式验证"><span class="nav-number">2.2.3.1.</span> <span class="nav-text">2.3.1. 格式验证</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-3-2-开始导入"><span class="nav-number">2.2.3.2.</span> <span class="nav-text">2.3.2. 开始导入</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-注意事项"><span class="nav-number">2.3.</span> <span class="nav-text">3.注意事项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-相关视频"><span class="nav-number">2.4.</span> <span class="nav-text">4.相关视频</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-迁移后续"><span class="nav-number">2.5.</span> <span class="nav-text">5. 迁移后续</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

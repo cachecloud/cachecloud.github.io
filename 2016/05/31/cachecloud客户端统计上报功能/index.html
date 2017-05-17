@@ -1,0 +1,791 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="一、几个疑问？1.为什么要有客户端上报？Redis的开发和运维人员，可以通过查看Redis的慢查询了解一些超时的情况，但是我们知道这个慢查询是指命令真正的执行时间，而客户端的调用的数据应该更为重要，其中包含对于客户端的耗时、value大小、异常。运维人员可能不完全清楚，这样对于发现Redis自身问题以及和应用方“撕”(定位问题)很不方便，所以客户端的一些数据无论对于开发人员还是运维人员都是非常有价">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CacheCloud客户端上报说明">
+<meta property="og:url" content="http://yoursite.com/2016/05/31/cachecloud客户端统计上报功能/index.html">
+<meta property="og:site_name" content="CacheCloud">
+<meta property="og:description" content="一、几个疑问？1.为什么要有客户端上报？Redis的开发和运维人员，可以通过查看Redis的慢查询了解一些超时的情况，但是我们知道这个慢查询是指命令真正的执行时间，而客户端的调用的数据应该更为重要，其中包含对于客户端的耗时、value大小、异常。运维人员可能不完全清楚，这样对于发现Redis自身问题以及和应用方“撕”(定位问题)很不方便，所以客户端的一些数据无论对于开发人员还是运维人员都是非常有价">
+<meta property="og:image" content="https://camo.githubusercontent.com/71c1223311e513ea99c1840e8dfc6a309ff5715c/687474703a2f2f69332e6974632e636e2f32303136303132362f333038345f66343764343561625f643562625f646463325f386666625f3633373538326531643434665f312e6a7067">
+<meta property="og:image" content="http://i2.itc.cn/20160531/3084_064c1f49_69a8_ab00_e8d6_1ad5e1825c52_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160531/3084_1b53e7b1_72c4_47fc_3474_c0cb233aede7_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160531/3084_0fe17f3b_e95a_f228_99a3_0c7c635bd3dd_1.png">
+<meta property="og:image" content="http://i2.itc.cn/20160531/3084_e728340e_df2c_8288_d281_06c542788449_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160531/3084_70e8bf84_16a3_ebc3_7465_750aa602fce4_1.png">
+<meta property="og:image" content="http://i1.itc.cn/20160531/3084_08665069_6d03_7ebc_efae_69b086774903_1.png">
+<meta property="og:updated_time" content="2016-11-03T15:15:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CacheCloud客户端上报说明">
+<meta name="twitter:description" content="一、几个疑问？1.为什么要有客户端上报？Redis的开发和运维人员，可以通过查看Redis的慢查询了解一些超时的情况，但是我们知道这个慢查询是指命令真正的执行时间，而客户端的调用的数据应该更为重要，其中包含对于客户端的耗时、value大小、异常。运维人员可能不完全清楚，这样对于发现Redis自身问题以及和应用方“撕”(定位问题)很不方便，所以客户端的一些数据无论对于开发人员还是运维人员都是非常有价">
+<meta name="twitter:image" content="https://camo.githubusercontent.com/71c1223311e513ea99c1840e8dfc6a309ff5715c/687474703a2f2f69332e6974632e636e2f32303136303132362f333038345f66343764343561625f643562625f646463325f386666625f3633373538326531643434665f312e6a7067">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> CacheCloud客户端上报说明 | CacheCloud </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?259be27fbdaccd97ee659bc4dfe21524";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">CacheCloud</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th fa-fw"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                CacheCloud客户端上报说明
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-31T11:20:00+08:00" content="2016-05-31">
+              2016-05-31
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/05/31/cachecloud客户端统计上报功能/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/31/cachecloud客户端统计上报功能/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/05/31/cachecloud客户端统计上报功能/" class="leancloud_visitors" data-flag-title="CacheCloud客户端上报说明">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、几个疑问？"><a href="#一、几个疑问？" class="headerlink" title="一、几个疑问？"></a>一、几个疑问？</h3><h4 id="1-为什么要有客户端上报？"><a href="#1-为什么要有客户端上报？" class="headerlink" title="1.为什么要有客户端上报？"></a>1.为什么要有客户端上报？</h4><p>Redis的开发和运维人员，可以通过查看Redis的慢查询了解一些超时的情况，但是我们知道这个慢查询是指命令真正的执行时间，而客户端的调用的数据应该更为重要，其中包含对于客户端的耗时、value大小、异常。运维人员可能不完全清楚，这样对于发现Redis自身问题以及和应用方“撕”(定位问题)很不方便，所以客户端的一些数据无论对于开发人员还是运维人员都是非常有价值的。</p>
+<h4 id="2-客户端上报会对客户端性能有消耗？"><a href="#2-客户端上报会对客户端性能有消耗？" class="headerlink" title="2.客户端上报会对客户端性能有消耗？"></a>2.客户端上报会对客户端性能有消耗？</h4><p>据统计会有万分之二、三的损耗：一万次调用，会有2~3次比不加统计上报调用时多消耗1~2毫秒，如果不是特别较真，几乎可以忽略不计。</p>
+<a id="more"></a>
+<h4 id="3-是否存在内存泄露？"><a href="#3-是否存在内存泄露？" class="headerlink" title="3.是否存在内存泄露？"></a>3.是否存在内存泄露？</h4><p>因为需要在客户端保存一些数据，是否存在内存泄露呢？这个客户端已经在搜狐视频的很多项目中使用接近一年，未发现有问题，而且之前我们也对客户端的数据进行了一些监控，未发现有内存泄露的问题，可以放心使用。</p>
+<h4 id="4-客户端上报是否需要使用搜狐提供的jedis？"><a href="#4-客户端上报是否需要使用搜狐提供的jedis？" class="headerlink" title="4.客户端上报是否需要使用搜狐提供的jedis？"></a>4.客户端上报是否需要使用搜狐提供的jedis？</h4><p>不需要，可以使用自己的jedis进行测试(jedis 2.7.2以后已测，其他不保证可用)。</p>
+<h4 id="5-客户端上报只支持java语言？"><a href="#5-客户端上报只支持java语言？" class="headerlink" title="5.客户端上报只支持java语言？"></a>5.客户端上报只支持java语言？</h4><p>是的！由于目前只对java的Redis客户端(jedis)比较熟悉，所以只在java的客户端提供了上报功能，其他语言可以参考下面的总体流程自行实现，有关上报的格式(cachecloud服务端可以解析的格式)，如果有需要再提供。</p>
+<h3 id="二、总体流程说明（如果想直接使用，可以跳过此步骤）："><a href="#二、总体流程说明（如果想直接使用，可以跳过此步骤）：" class="headerlink" title="二、总体流程说明（如果想直接使用，可以跳过此步骤）："></a>二、总体流程说明（<strong>如果想直接使用，可以跳过此步骤</strong>）：</h3><p><img src="https://camo.githubusercontent.com/71c1223311e513ea99c1840e8dfc6a309ff5715c/687474703a2f2f69332e6974632e636e2f32303136303132362f333038345f66343764343561625f643562625f646463325f386666625f3633373538326531643434665f312e6a7067" alt="总体流程图"></p>
+<p>如上图所示，完成客户端上报需要如下四步:</p>
+<ul>
+<li>在jedis上做一些”手脚”，对jedis的每个命令产生的耗时、返回value的大小、是否产生异常进行拦截和统计。</li>
+<li>管理上述数据。(定期清理，维护数据)</li>
+<li>将指定数据每分钟上报给cachecloud服务端。(使用http的形式)</li>
+<li>cachecloud服务端接收上报数据，保存在mysql中，并绘制成图表。</li>
+</ul>
+<h3 id="三、总体效果"><a href="#三、总体效果" class="headerlink" title="三、总体效果"></a>三、总体效果</h3><h4 id="１-功能入口"><a href="#１-功能入口" class="headerlink" title="１.功能入口"></a>１.功能入口</h4><p>应用方使用了新版客户端(带统计上报功能)，点击自己的应用，点击客户端统计按钮就可以查看相应的客户端数据报表。<br><img src="http://i2.itc.cn/20160531/3084_064c1f49_69a8_ab00_e8d6_1ad5e1825c52_1.png" alt="功能入口"></p>
+<h4 id="2-耗时统计："><a href="#2-耗时统计：" class="headerlink" title="2.耗时统计："></a>2.耗时统计：</h4><p>(1) 应用和客户端的全局耗时统计。<br>(2) 所有客户端和redis实例对应关系，以及耗时统计。<br>(3) 耗时统计包含了:平均值、中位值、90%最大值、99%最大值、最大值五个维度。<br>(4) 命令按照调用量倒排序。</p>
+<p><img src="http://i2.itc.cn/20160531/3084_1b53e7b1_72c4_47fc_3474_c0cb233aede7_1.png" alt=""><br><img src="http://i2.itc.cn/20160531/3084_0fe17f3b_e95a_f228_99a3_0c7c635bd3dd_1.png" alt=""><br><img src="http://i2.itc.cn/20160531/3084_e728340e_df2c_8288_d281_06c542788449_1.png" alt=""></p>
+<h4 id="3-值分布统计"><a href="#3-值分布统计" class="headerlink" title="3.值分布统计"></a>3.值分布统计</h4><p>   按照value的区间，统计了redis过程中io输入流中字符数组的大小作为value的值，帮助用户分析value值是否合理（是否存在大value(如1000k以上)）。</p>
+<p><img src="http://i1.itc.cn/20160531/3084_70e8bf84_16a3_ebc3_7465_750aa602fce4_1.png" alt="值分布统计"></p>
+<h4 id="4-异常统计"><a href="#4-异常统计" class="headerlink" title="4.异常统计"></a>4.异常统计</h4><p> 查询客户端和redis实例的异常、客户端上报过程中的异常、redis-cluster存在的异常(由于jedis中对于redis-cluster调用做了特殊处理，所以单独统计。)</p>
+<p><img src="http://i1.itc.cn/20160531/3084_08665069_6d03_7ebc_efae_69b086774903_1.png" alt="异常统计"></p>
+<h3 id="四、-使用方法"><a href="#四、-使用方法" class="headerlink" title="四、 使用方法"></a>四、 使用方法</h3><h4 id="1-jedis的改造-2-7-2-版本可用，其他未试过"><a href="#1-jedis的改造-2-7-2-版本可用，其他未试过" class="headerlink" title="1. jedis的改造(2.7.2+版本可用，其他未试过)"></a>1. jedis的改造(2.7.2+版本可用，其他未试过)</h4><ul>
+<li>jedis统计版本，可以详见：<a href="https://github.com/sohutv/jedis-2.8.0-stat，" target="_blank" rel="external">https://github.com/sohutv/jedis-2.8.0-stat，</a></li>
+<li>具体修改细节，可以参考<a href="https://github.com/sohutv/jedis-2.8.0-stat/commit/0d82201172df25f769ced2786c88a5b928060c13" target="_blank" rel="external">https://github.com/sohutv/jedis-2.8.0-stat/commit/0d82201172df25f769ced2786c88a5b928060c13</a></li>
+</ul>
+<p>修改文件入下： </p>
+<ul>
+<li><p>在jedis添加新的pom依赖：cachecloud-open-jedis-stat包含了一些统计的基础类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;dependency&gt;</div><div class="line">	&lt;groupId&gt;com.sohu.tv&lt;/groupId&gt;</div><div class="line">	&lt;artifactId&gt;cachecloud-open-jedis-stat&lt;/artifactId&gt;</div><div class="line">	&lt;version&gt;1.0&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>Connection.java<br>Connection是Jedis调用命令的基础类，所以在这里做了一些相应的拦截</p>
+</li>
+<li><p>JedisClusterCommand.java<br>统计了一下JedisClusterMaxRedirectionsException异常</p>
+</li>
+</ul>
+<h4 id="2-开启统计功能"><a href="#2-开启统计功能" class="headerlink" title="2. 开启统计功能"></a>2. 开启统计功能</h4><p>细心的朋友应该已经发现，在之前发布的客户端代码中，有一行是注释掉的，那个就是客户端统计的开关，如果想使用在如下类去掉注释即可。<br>具体类：RedisClusterBuilder、RedisSentinelBuilder、RedisStandaloneBuilder</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">//收集上报数据</div><div class="line">//ClientDataCollectReportExecutor.getInstance();</div></pre></td></tr></table></figure>
+<p>修改cachecloud-open-client-redis包中的pom.xml中的jedis版本为你的私有版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;properties&gt;</div><div class="line">  &lt;jedis.version&gt;$&#123;你的jedis版本(加上报功能的)&#125;&lt;/jedis.version&gt;</div><div class="line">&lt;/properties&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="3-上报"><a href="#3-上报" class="headerlink" title="3. 上报"></a>3. 上报</h4><p>在第2步开启后，会自动上报。</p>
+<h4 id="4-报表"><a href="#4-报表" class="headerlink" title="4. 报表"></a>4. 报表</h4><p>在第2步开启后，会自动出现，详见第二章具体功能</p>
+<h4 id="5-添加新的表"><a href="#5-添加新的表" class="headerlink" title="5.添加新的表"></a>5.添加新的表</h4><p>以cachecloud源码中的表为准.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `app_client_value_minute_stats` (</div><div class="line">  `app_id` bigint(20) NOT NULL COMMENT &apos;应用id&apos;,</div><div class="line">  `collect_time` bigint(20) NOT NULL COMMENT &apos;统计时间:格式yyyyMMddHHmm00&apos;,</div><div class="line">  `update_time` datetime NOT NULL COMMENT &apos;创建时间&apos;,</div><div class="line">  `command` varchar(20) NOT NULL COMMENT &apos;命令&apos;,</div><div class="line">  `distribute_type` tinyint(4) NOT NULL COMMENT &apos;值分布类型&apos;,</div><div class="line">  `count` int(11) NOT NULL COMMENT &apos;调用次数&apos;,</div><div class="line">  PRIMARY KEY (`app_id`,`collect_time`,`command`,`distribute_type`),</div><div class="line">  KEY `idx_collect_time` (`collect_time`)</div><div class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;客户端每分钟值分布上报数据统计&apos;;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `app_client_instance` (</div><div class="line">  `app_id` bigint(20) NOT NULL COMMENT &apos;应用id&apos;,</div><div class="line">  `client_ip` varchar(20) NOT NULL COMMENT &apos;客户端ip&apos;,</div><div class="line">  `instance_host` varchar(20) NOT NULL COMMENT &apos;redis节点ip&apos;,</div><div class="line">  `instance_port` int(11) NOT NULL COMMENT &apos;redis节点端口&apos;,</div><div class="line">  `instance_id` bigint(20) NOT NULL COMMENT &apos;redis节点id&apos;,</div><div class="line">  `day` date NOT NULL COMMENT &apos;日期&apos;,</div><div class="line">  PRIMARY KEY (`app_id`,`day`,`client_ip`,`instance_id`)</div><div class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;应用实例与客户端对应关系表&apos;;</div></pre></td></tr></table></figure>
+<h3 id="五、-视频"><a href="#五、-视频" class="headerlink" title="五、 视频"></a>五、 视频</h3><p>如果对java不太了解，或者配置不太成功，请等待视频教程。<br><strong>尚未录制</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">顺便说一句，群里有几个人已经自己搞定了，没有这个文档之前，赞赞！！！</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/24/CacheCloud系统配置说明/" rel="next" title="CacheCloud-系统配置">
+                <i class="fa fa-chevron-left"></i> CacheCloud-系统配置
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/06/28/Cachecloud中Redis的相关配置/" rel="prev" title="Cachecloud中Redis的相关配置">
+                Cachecloud中Redis的相关配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/05/31/cachecloud客户端统计上报功能/"
+           data-title="CacheCloud客户端上报说明" data-url="http://yoursite.com/2016/05/31/cachecloud客户端统计上报功能/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://i3.itc.cn/20160316/3084_9587fc69_5909_9fac_89e3_c420eda9eafa_1.png"
+               alt="cachecloud" />
+          <p class="site-author-name" itemprop="name">cachecloud</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/sohutv/cachecloud" target="_blank" title="cachecloud-github">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  cachecloud-github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://carlosfu.iteye.com" target="_blank" title="carlosfu">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  carlosfu
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://hot66hot.iteye.com" target="_blank" title="hot66hot">
+                  
+                    <i class="fa fa-globe"></i>
+                  
+                  hot66hot
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、几个疑问？"><span class="nav-number">1.</span> <span class="nav-text">一、几个疑问？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-为什么要有客户端上报？"><span class="nav-number">1.1.</span> <span class="nav-text">1.为什么要有客户端上报？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-客户端上报会对客户端性能有消耗？"><span class="nav-number">1.2.</span> <span class="nav-text">2.客户端上报会对客户端性能有消耗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-是否存在内存泄露？"><span class="nav-number">1.3.</span> <span class="nav-text">3.是否存在内存泄露？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-客户端上报是否需要使用搜狐提供的jedis？"><span class="nav-number">1.4.</span> <span class="nav-text">4.客户端上报是否需要使用搜狐提供的jedis？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-客户端上报只支持java语言？"><span class="nav-number">1.5.</span> <span class="nav-text">5.客户端上报只支持java语言？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、总体流程说明（如果想直接使用，可以跳过此步骤）："><span class="nav-number">2.</span> <span class="nav-text">二、总体流程说明（如果想直接使用，可以跳过此步骤）：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、总体效果"><span class="nav-number">3.</span> <span class="nav-text">三、总体效果</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#１-功能入口"><span class="nav-number">3.1.</span> <span class="nav-text">１.功能入口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-耗时统计："><span class="nav-number">3.2.</span> <span class="nav-text">2.耗时统计：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-值分布统计"><span class="nav-number">3.3.</span> <span class="nav-text">3.值分布统计</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-异常统计"><span class="nav-number">3.4.</span> <span class="nav-text">4.异常统计</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、-使用方法"><span class="nav-number">4.</span> <span class="nav-text">四、 使用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-jedis的改造-2-7-2-版本可用，其他未试过"><span class="nav-number">4.1.</span> <span class="nav-text">1. jedis的改造(2.7.2+版本可用，其他未试过)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-开启统计功能"><span class="nav-number">4.2.</span> <span class="nav-text">2. 开启统计功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-上报"><span class="nav-number">4.3.</span> <span class="nav-text">3. 上报</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-报表"><span class="nav-number">4.4.</span> <span class="nav-text">4. 报表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-添加新的表"><span class="nav-number">4.5.</span> <span class="nav-text">5.添加新的表</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、-视频"><span class="nav-number">5.</span> <span class="nav-text">五、 视频</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cachecloud</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cachecloud"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("OhjgplS5KnuxtgyVIUQjuW7c-gzGzoHsz", "bEgcz4jDaQeGvoET5d2z9h6o");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
