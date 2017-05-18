@@ -665,6 +665,138 @@
             
               
                 
+                <a class="post-title-link" href="/2016/07/11/1.1升级到1.2方法/" itemprop="url">
+                  CacheCloud 1.1升级到1.2的方法
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-11T11:20:00+08:00" content="2016-07-11">
+              2016-07-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cachecloud</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/11/1.1升级到1.2方法/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/11/1.1升级到1.2方法/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/07/11/1.1升级到1.2方法/" class="leancloud_visitors" data-flag-title="CacheCloud 1.1升级到1.2的方法">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h4 id="一、数据升级"><a href="#一、数据升级" class="headerlink" title="一、数据升级"></a>一、数据升级</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">也可以参考Cachecloud.sql文件的变化</div></pre></td></tr></table></figure>
+<h5 id="1-新加的系统配置"><a href="#1-新加的系统配置" class="headerlink" title="1.新加的系统配置"></a>1.新加的系统配置</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;redis.migrate.tool.home&apos;,&apos;/opt/cachecloud/redis-migrate-tool/&apos;,&apos;redis-migrate-tool安装路径&apos;,1,18);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.user.login.type&apos;,&apos;1&apos;,&apos;用户登录状态保存方式(session或cookie)&apos;,1,19);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.cookie.domain&apos;,&apos;&apos;,&apos;cookie登录方式所需要的域名&apos;,1,20);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.base.dir&apos;,&apos;/opt&apos;,&apos;cachecloud根目录，要和cachecloud-init.sh脚本中的目录一致&apos;,1,21);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.app.client.conn.threshold&apos;,&apos;2000&apos;,&apos;应用连接数报警阀值&apos;,1,22);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.email.alert.interface&apos;,&apos;&apos;,&apos;邮件报警接口(说明:http://cachecloud.github.io 邮件和短信报警接口规范)&apos;,1,23);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.mobile.alert.interface&apos;,&apos;&apos;,&apos;短信报警接口(说明:http://cachecloud.github.io 邮件和短信报警接口规范)&apos;,1,24);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.ldap.url&apos;,&apos;&apos;,&apos;LDAP接口地址(例如:ldap://ldap.xx.com)&apos;,1,25);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.whether.schedule.clean.data&apos;,&apos;false&apos;,&apos;是否定期清理统计数据&apos;,1,26);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.app.secret.base.key&apos;,&apos;cachecloud-2014&apos;,&apos;appkey秘钥基准key&apos;,1,27);</div></pre></td></tr></table></figure>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/07/11/1.1升级到1.2方法/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+    
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/07/11/1.2. CacheCloud 1.2更新列表/" itemprop="url">
                   CacheCloud 1.2更新列表
                 </a>
@@ -775,138 +907,6 @@
 </ul>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/07/11/1.2. CacheCloud 1.2更新列表/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/07/11/1.1升级到1.2方法/" itemprop="url">
-                  CacheCloud 1.1升级到1.2的方法
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-11T11:20:00+08:00" content="2016-07-11">
-              2016-07-11
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/cachecloud/" itemprop="url" rel="index">
-                    <span itemprop="name">cachecloud</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/07/11/1.1升级到1.2方法/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/11/1.1升级到1.2方法/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/07/11/1.1升级到1.2方法/" class="leancloud_visitors" data-flag-title="CacheCloud 1.1升级到1.2的方法">
-               &nbsp; | &nbsp;
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h4 id="一、数据升级"><a href="#一、数据升级" class="headerlink" title="一、数据升级"></a>一、数据升级</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">也可以参考Cachecloud.sql文件的变化</div></pre></td></tr></table></figure>
-<h5 id="1-新加的系统配置"><a href="#1-新加的系统配置" class="headerlink" title="1.新加的系统配置"></a>1.新加的系统配置</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;redis.migrate.tool.home&apos;,&apos;/opt/cachecloud/redis-migrate-tool/&apos;,&apos;redis-migrate-tool安装路径&apos;,1,18);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.user.login.type&apos;,&apos;1&apos;,&apos;用户登录状态保存方式(session或cookie)&apos;,1,19);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.cookie.domain&apos;,&apos;&apos;,&apos;cookie登录方式所需要的域名&apos;,1,20);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.base.dir&apos;,&apos;/opt&apos;,&apos;cachecloud根目录，要和cachecloud-init.sh脚本中的目录一致&apos;,1,21);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.app.client.conn.threshold&apos;,&apos;2000&apos;,&apos;应用连接数报警阀值&apos;,1,22);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.email.alert.interface&apos;,&apos;&apos;,&apos;邮件报警接口(说明:http://cachecloud.github.io 邮件和短信报警接口规范)&apos;,1,23);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.mobile.alert.interface&apos;,&apos;&apos;,&apos;短信报警接口(说明:http://cachecloud.github.io 邮件和短信报警接口规范)&apos;,1,24);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.ldap.url&apos;,&apos;&apos;,&apos;LDAP接口地址(例如:ldap://ldap.xx.com)&apos;,1,25);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.whether.schedule.clean.data&apos;,&apos;false&apos;,&apos;是否定期清理统计数据&apos;,1,26);</div><div class="line">insert into system_config(config_key,config_value,info,status,order_id) values(&apos;cachecloud.app.secret.base.key&apos;,&apos;cachecloud-2014&apos;,&apos;appkey秘钥基准key&apos;,1,27);</div></pre></td></tr></table></figure>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/07/11/1.1升级到1.2方法/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
